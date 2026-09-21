@@ -7,3 +7,6 @@ dist/
 
 .vercel
 .env*
+
+# Perfiles temporales que deja Chrome headless al medir.
+_perfil*/
