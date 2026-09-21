@@ -1,0 +1,27 @@
+# Se sube dist/ ya compilado y nada más: lo que ve el cliente es EXACTAMENTE lo
+# que se verificó en esta máquina, sin depender de que una compilación en un
+# servidor ajeno dé el mismo resultado.
+node_modules
+.astro
+.capturas
+.impeccable
+.claude
+research
+scripts
+src
+public
+package.json
+package-lock.json
+astro.config.mjs
+*.md
+
+# Los precios y las propuestas comerciales NO se suben al hosting del cliente.
+propuesta
+
+# Los originales pesados no se suben: a dist solo van los .webp ya procesados.
+originales
+
+# El asistente es un proyecto de Vercel APARTE, con su propio `vercel deploy`
+# desde dentro de agente/. Aquí solo estorbaría: este despliegue es hosting
+# estático puro y no ejecuta funciones. Además lleva node_modules propio.
+agente

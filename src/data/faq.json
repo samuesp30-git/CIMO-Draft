@@ -1,0 +1,58 @@
+[
+  {
+    "pregunta": "¿Cómo agendo una cita?",
+    "respuesta": "Por WhatsApp al 9770-3774, o con el botón «Agendar cita» de este sitio, que arma el mensaje por ti. Se solicita el día que te conviene; la hora la confirma la clínica según su disponibilidad.",
+    "pendiente": false
+  },
+  {
+    "pregunta": "¿Qué horario tienen?",
+    "respuesta": "Lunes a viernes de 9:00 a. m. a 7:00 p. m., y sábado de 9:00 a. m. a 5:00 p. m. Domingo cerrado.",
+    "pendiente": false
+  },
+  {
+    "pregunta": "¿Dónde están?",
+    "respuesta": "En Boulevard Centroamérica, Torre Corporativo Centroamérica, entre CCIT Cámara de Comercio y CEUTEC, tercer piso, local 8, Tegucigalpa.",
+    "pendiente": false
+  },
+  {
+    "pregunta": "¿Qué es la ortodoncia invisible?",
+    "respuesta": "Son alineadores transparentes y removibles que van moviendo los dientes por etapas, sin brackets ni alambres. En CIMO se trabaja con Invisalign.",
+    "pendiente": false
+  },
+  {
+    "pregunta": "¿Puedo ver cómo va a quedar mi sonrisa antes de empezar?",
+    "respuesta": "Sí. El escáner iTero 5D Plus, que la clínica incorporó en julio de 2026, permite ver una simulación de cómo podría quedar tu sonrisa antes de iniciar el tratamiento.",
+    "pendiente": false
+  },
+  {
+    "pregunta": "¿Atienden niños?",
+    "respuesta": "Sí, la clínica atiende odontopediatría.",
+    "pendiente": false
+  },
+
+  {
+    "pregunta": "¿Cuánto cuesta un tratamiento?",
+    "pendiente": true,
+    "porQue": "No hay ningún precio publicado en las fuentes disponibles. Un rango inventado en una clínica no es relleno: es un problema."
+  },
+  {
+    "pregunta": "¿Aceptan seguros médicos?",
+    "pendiente": true,
+    "porQue": "No consta en ninguna fuente pública."
+  },
+  {
+    "pregunta": "¿Quiénes son los especialistas?",
+    "pendiente": true,
+    "porQue": "De todo el equipo solo consta públicamente la Dra. Marta Muñoz. La nómina está en una historia destacada de Instagram que exige sesión iniciada."
+  },
+  {
+    "pregunta": "¿Ofrecen servicios médicos además de los odontológicos?",
+    "pendiente": true,
+    "porQue": "El nombre dice «Centro Integral Médico Odontológico», pero todo el contenido público es odontológico y Facebook los clasifica como consultorio dental. Hay que preguntarlo antes de afirmar nada."
+  },
+  {
+    "pregunta": "¿Atienden en La Entrada, Copán?",
+    "pendiente": true,
+    "porQue": "CIMO tiene una segunda sede en La Entrada, Copán, pero queda fuera de esta fase del sitio. Falta confirmar horario y si tiene WhatsApp propio."
+  }
+]

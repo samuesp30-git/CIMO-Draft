@@ -1,0 +1,56 @@
+---
+// Hueco declarado.
+//
+// CIMO no entregó fotografía ni logo vectorial. La regla del sistema es que lo
+// que no se sabe se MARCA como pendiente, no se rellena: una clínica que enseña
+// un consultorio de banco de imágenes está mintiendo sobre lo que el paciente va
+// a encontrar cuando llegue.
+//
+// Lleva data-marcador para que verificar.mjs pueda cuadrar uno a uno los huecos
+// de dist/ contra pendientes.json. Un marcador que sobrevive a la entrega del
+// material se convierte así en un fallo de compilación, no en algo que alguien
+// tiene que acordarse de mirar.
+
+interface Props {
+  /** Qué falta, en una frase. Va visible: el cliente tiene que poder leerlo. */
+  texto: string;
+  alto?: number;
+  /** id de la entrada de pendientes.json que lo justifica. */
+  pendiente?: string;
+  class?: string;
+}
+const { texto, alto = 220, pendiente, class: clase } = Astro.props;
+---
+
+<div
+  class:list={['marcador', clase]}
+  style={`--alto:${alto}px`}
+  data-marcador={pendiente ?? ''}
+  role="img"
+  aria-label={`Contenido pendiente: ${texto}`}
+>
+  <span>{texto}</span>
+</div>
+
+<style>
+  .marcador {
+    height: var(--alto);
+    border-radius: var(--radius);
+    border: 1px dashed var(--line);
+    background: var(--surface-seccion-tenue);
+    display: grid;
+    place-items: center;
+    padding: var(--s-2);
+    text-align: center;
+  }
+  .marcador span {
+    font-family: var(--font-datos);
+    font-size: var(--step--2);
+    font-weight: 500;
+    letter-spacing: var(--track-versalita);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    max-width: 26ch;
+    line-height: 1.6;
+  }
+</style>

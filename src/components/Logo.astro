@@ -1,0 +1,42 @@
+---
+import Wordmark from './Wordmark.astro';
+
+// Símbolo + wordmark.
+//
+// El SÍMBOLO es una imagen y el WORDMARK es tipo. No es una inconsistencia:
+// el wordmark se puede componer porque se midió (Jost 300, tracking +0.1em,
+// O/altura 0.94), pero la cruz con el diente no se dibuja de memoria.
+//
+// La imagen sale de un logo de 1148 x 1148 que el cliente sí tenía —recortado
+// y ajustado al contenido en 274 x 274— y no del avatar de 150 px de Instagram,
+// que era lo único que había al empezar. Sigue faltando el VECTORIAL: por
+// encima de ~137 px de lado esto se empieza a ver. Ver pendientes.json.
+//
+// FONDO BLANCO, no transparente: viene de un JPEG y no tiene alfa. Por eso el
+// símbolo va solo donde el fondo es claro; en el pie, que es oscuro, la marca
+// se compone solo en tipo.
+
+interface Props {
+  /** Lado del símbolo en px. No pasar de 137: es la mitad del original. */
+  lado?: number;
+  conBajada?: boolean;
+  class?: string;
+}
+const { lado = 34, conBajada, class: clase } = Astro.props;
+---
+
+<span class:list={['logo', clase]}>
+  <img
+    src="img/simbolo-cimo.png"
+    alt=""
+    width={lado}
+    height={lado}
+    decoding="async"
+  />
+  <Wordmark tamano={Math.round(lado * 0.76)} conBajada={conBajada} />
+</span>
+
+<style>
+  .logo { display: inline-flex; align-items: center; gap: 0.625rem }
+  .logo img { display: block; flex: none }
+</style>

@@ -1,0 +1,74 @@
+---
+import CitaCTA from './CitaCTA.astro';
+
+// La banda de cierre de las páginas interiores.
+//
+// POR QUÉ EXISTE. El inicio termina en una franja oscura a sangre y el pie es
+// oscuro, así que la portada tiene un ritmo claro-oscuro-claro-oscuro. Las
+// páginas interiores no lo tenían: servicios era blanco de arriba abajo y
+// terminaba en una cajita de --surface-alterna con borde de 1 px, y contacto no
+// tenía ni una sola superficie. El sitio se aplanaba en cuanto salías del
+// inicio.
+//
+// Una caja pálida con borde dice «aquí hay una nota al pie». Una banda a sangre
+// dice «esto es el final de la página y esto es lo que hay que hacer». Es el
+// mismo gesto que ya hace el inicio, y repetirlo en las interiores no es
+// plantilla: un cierre que cambia de forma en cada página obliga a volver a
+// buscar dónde está el botón.
+//
+// LA MISMA SUPERFICIE, NO UNA PARECIDA. El material entero —velo, trama,
+// degradado y el sólido de debajo— vive en `.banda-oscura` (tokens.css §6).
+// Aquí no se repite ni una capa.
+//
+// EL BOTÓN ES `claro`, NO `marca`. Sobre esta banda el azul de marca queda a
+// 2.2:1 del fondo… no como texto, que rellena, sino como OBJETO: un botón azul
+// medio sobre tinta no salta lo suficiente para leerse como el control
+// principal. El blanco sólido sí, y es el mismo par que el CTA de la portada
+// fotográfica.
+
+interface Props {
+  class?: string;
+}
+const { class: clase } = Astro.props;
+---
+
+<section class:list={['cierre', 'banda-oscura', clase]}>
+  <div class="contenedor rejilla">
+    <p><slot /></p>
+    {/* CitaCTA es `display: contents` y suelta DOS botones —el del diálogo y su
+        gemelo tel:—, así que necesita envoltorio propio: sin él, los dos se
+        convierten en celdas de esta rejilla de dos columnas. */}
+    <div class="lado"><CitaCTA tamano="lg" variante="claro" /></div>
+  </div>
+</section>
+
+<style>
+  /* Se come el margen superior del pie, igual que la franja del inicio: una
+     rendija blanca de 64 px entre dos bloques oscuros se lee como una costura
+     mal cosida, no como una decisión. */
+  .cierre { margin-bottom: calc(var(--s-6) * -1) }
+
+  .rejilla {
+    padding-block: var(--s-5);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--s-4);
+    align-items: center;
+  }
+
+  /* Serif y en blanco: es una frase, no un pie de foto. El ancho corto la
+     mantiene dentro de la mitad que el velo protege. */
+  .rejilla p {
+    font-family: var(--font-titulo);
+    font-size: var(--step-2);
+    line-height: var(--lh-titular);
+    color: var(--base);
+    max-width: 32ch;
+  }
+
+  .lado { display: grid; justify-items: start }
+
+  @media (max-width: 60rem) {
+    .rejilla { grid-template-columns: 1fr }
+  }
+</style>

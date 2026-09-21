@@ -1,0 +1,94 @@
+---
+import clinica from '../data/clinica.json';
+
+// El recuadro del mapa. Solo el recuadro: la ficha de dirección la pone quien
+// lo usa, porque en el inicio y en contacto la acompaña texto distinto.
+//
+// ────────────────────────────────────────────────────────────────────────────
+// DE DÓNDE SALE EL PUNTO, que es lo único delicado de este archivo.
+//
+// CIMO anunció mudanza en mayo de 2026 sin decir a dónde, así que
+// `coordenadas` sigue en null: NO se inventan unas. Lo que sí existe es la
+// última dirección que la clínica publicó, y eso es lo que se le pasa a Google
+// —el texto, no un par de cifras— para que la resuelva él.
+//
+// La diferencia importa. Unas coordenadas escritas a mano afirman «la clínica
+// está EXACTAMENTE aquí» con una precisión que nadie ha comprobado. Una
+// consulta por dirección afirma lo que de verdad se sabe: «esta es la dirección
+// que la clínica publicó». Por eso, mientras `direccionPendiente` siga en true,
+// quien monte este componente tiene que enseñar el aviso al lado; verificar.mjs
+// lo comprueba y falla la compilación si falta.
+//
+// Cuando el cliente confirme el local: se rellena `coordenadas` en clinica.json
+// y el mapa pasa solo a apuntar al punto exacto. No hay que tocar esto.
+// ────────────────────────────────────────────────────────────────────────────
+
+interface Props {
+  alto?: string;
+  class?: string;
+}
+const { alto = '16 / 10', class: clase } = Astro.props;
+
+const sede = clinica.sedes[0];
+const { direccion, coordenadas } = sede;
+
+const consulta = coordenadas
+  ? `${coordenadas.lat},${coordenadas.lng}`
+  : direccion.consulta;
+
+const embebido = `https://maps.google.com/maps?q=${encodeURIComponent(consulta)}&z=17&hl=es&output=embed`;
+const verGrande = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consulta)}`;
+---
+
+<div class:list={['marco', clase]} style={`--proporcion:${alto}`}>
+  {/* El respaldo se dibuja SIEMPRE, debajo del iframe. Si el mapa carga, lo
+      tapa. Si no —sin conexión, iframe de terceros bloqueado, o el origen nulo
+      de file://, que es como el cliente va a ver esto— el visitante lee la
+      dirección y tiene un enlace, en vez de mirar un rectángulo gris. Sin una
+      línea de JavaScript de por medio. */}
+  <div class="respaldo">
+    <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+      <path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z" fill="none" stroke="currentColor" stroke-width="1.5"></path>
+      <circle cx="12" cy="10" r="2.4" fill="currentColor"></circle>
+    </svg>
+    <p>{direccion.completa}</p>
+    <a href={verGrande} target="_blank" rel="noopener noreferrer">Abrir en Google Maps</a>
+  </div>
+
+  <iframe
+    src={embebido}
+    title={`Mapa de la ubicación de ${clinica.nombre} en ${direccion.ciudad}`}
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade"
+    allowfullscreen
+    data-mapa></iframe>
+</div>
+
+<style>
+  .marco {
+    position: relative;
+    aspect-ratio: var(--proporcion);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border-card);
+    background: var(--surface-alterna);
+  }
+
+  iframe { position: relative; z-index: 1; width: 100%; height: 100%; border: 0; display: block }
+
+  .respaldo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--s-1);
+    padding: var(--s-3);
+    text-align: center;
+    color: var(--text-secundario);
+  }
+  .respaldo svg { color: var(--text-marca) }
+  .respaldo p { margin: 0; font-size: var(--step--1); max-width: 30ch }
+  .respaldo a { font-family: var(--font-datos); font-size: var(--step--1); color: var(--text-marca) }
+</style>

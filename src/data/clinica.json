@@ -1,0 +1,83 @@
+{
+  "nombre": "CIMO",
+  "nombreCompleto": "Centro Integral Médico Odontológico",
+  "lema": "Transformando sonrisas y cuidando tu bienestar",
+  "lemaNota": "Textual de su biografía de Instagram. No se reescribe.",
+  "descripcion": "Centro Integral Médico Odontológico en Tegucigalpa. Especialistas en salud bucal, con ortodoncia invisible Invisalign planificada con escáner iTero 5D Plus.",
+  "presentacion": [
+    "Somos una empresa familiar que busca mejorar la salud de la población que atiende.",
+    "Especialistas en salud bucal, con tratamientos planificados sobre tecnología de diagnóstico actual."
+  ],
+  "presentacionNota": "La primera frase parafrasea la intro de su Facebook (\"Somos una empresa familiar emprendedora que busca mejorar la salud en general de la población atend...\"), que llega truncada por Facebook. PENDIENTE: pedir el texto completo al cliente y sustituirlo palabra por palabra.",
+
+  "telefono": {
+    "display": "9770-3774",
+    "href": "+50497703774"
+  },
+  "whatsapp": {
+    "placeholder": false,
+    "numero": "50497703774",
+    "display": "9770-3774",
+    "nota": "REAL, verificado en seis publicaciones de Instagram entre mayo y septiembre de 2026. A diferencia del sitio hermano, aquí no hay marcador que sustituir antes de publicar.",
+    "plantillas": {
+      "general": "Hola, me gustaría información sobre sus servicios.",
+      "servicio": "Hola, vengo de la página de {servicio} y me gustaría información.",
+      "invisalign": "Hola, me interesa la ortodoncia invisible con Invisalign. ¿Me pueden dar información?",
+      "fueraDeHorario": "Hola, les escribo fuera de horario. ¿Me pueden contactar cuando abran?",
+      "citaCalendario": "Hola, quiero solicitar una cita.\n\nNombre: {nombre}\nQué necesito: {servicio}\nDía que me conviene: {dia}\n\nSé que la hora depende de la disponibilidad de la clínica. Quedo pendiente de su confirmación."
+    },
+    "plantillasNota": "El mensaje cambia según la página, así la clínica sabe la intención antes de contestar y puede medir qué servicio genera consultas leyendo su propio WhatsApp."
+  },
+  "email": "cimo.hn2020@gmail.com",
+
+  "sedes": [
+    {
+      "id": "tegucigalpa",
+      "nombre": "Tegucigalpa",
+      "direccion": {
+        "edificio": "Torre Corporativo Centroamérica",
+        "detalle": "3.er piso, local 8",
+        "referencia": "Entre CCIT Cámara de Comercio y CEUTEC",
+        "calle": "Boulevard Centroamérica",
+        "ciudad": "Tegucigalpa",
+        "codigoPostal": "11101",
+        "pais": "Honduras",
+        "completa": "Boulevard Centroamérica, Torre Corporativo Centroamérica, entre CCIT Cámara de Comercio y CEUTEC, 3.er piso, local 8, Tegucigalpa, Honduras",
+        "consulta": "Torre Corporativo Centroamérica, Boulevard Centroamérica, Tegucigalpa, Honduras",
+        "consultaNota": "Lo que se le pasa a Google Maps para que localice la clínica MIENTRAS no haya coordenadas confirmadas. Es la dirección publicada, sin la referencia («entre CCIT y CEUTEC») ni el piso, que solo confunden al geocodificador. No es una afirmación de que el punto sea exacto: eso lo dice el aviso que acompaña al mapa. Al confirmarse el local se rellenan las coordenadas y este campo deja de usarse."
+      },
+      "direccionPendiente": true,
+      "direccionPendienteNota": "En mayo de 2026 publicaron un reel de mudanza: «Cerramos una puerta llena de recuerdos para abrir otra llena de nuevas oportunidades… Próximamente». La dirección de arriba es la última confirmada en publicaciones, pero puede haber cambiado. CONFIRMAR ANTES DE PUBLICAR.",
+      "coordenadas": null,
+      "coordenadasNota": "null a propósito. No se geocodifica una dirección que el cliente no ha confirmado: un mapa que lleva al sitio equivocado es peor que ningún mapa. Al confirmarse, se rellena y el mapa aparece solo.",
+      "zonaHoraria": "America/Tegucigalpa",
+      "horarios": [
+        { "dias": "Lunes a viernes", "dow": [1, 2, 3, 4, 5], "apertura": "09:00", "cierre": "19:00" },
+        { "dias": "Sábado", "dow": [6], "apertura": "09:00", "cierre": "17:00" }
+      ],
+      "cerrado": [{ "dias": "Domingo", "dow": [0] }]
+    }
+  ],
+  "sedesNota": "El array existe con una sola entrada a propósito. CIMO tiene una segunda sede en La Entrada, Copán (Col. Vanessa, calle adoquinada, 2.º pasaje sin salida), que queda FUERA de esta fase por decisión del cliente. Montar el esquema para dos desde el principio evita migrarlo más adelante con el cliente esperando; añadirla es una entrada más en este array.",
+  "horariosNota": "CONFIRMADO por el cliente. Antes figuraba como pendiente porque solo constaba en una historia destacada de Instagram, que exige sesión iniciada.",
+
+  "tecnologia": [
+    {
+      "nombre": "iTero 5D Plus",
+      "que": "Escáner intraoral. Permite ver una simulación de la sonrisa final antes de empezar el tratamiento.",
+      "desde": "julio de 2026",
+      "promesa": [
+        { "titulo": "Escaneo", "texto": "Un modelo digital de tu boca. Sin pasta ni moldes." },
+        { "titulo": "Simulación", "texto": "El escáner proyecta cómo puede quedar." },
+        { "titulo": "Lo ves antes de decidir", "texto": "Y entonces eliges, sabiendo qué esperar." }
+      ],
+      "promesaNota": "Los tres tiempos de la PROMESA del escáner, que es lo único que CIMO tiene y ninguna otra clínica de Tegucigalpa puede copiar. No confundir con los cuatro pasos del TRATAMIENTO que enumera invisalign.astro: aquellos son el recorrido clínico, estos son la razón por la que alguien elegiría esta clínica. Dicen cosas distintas a propósito. Todo sale del `que` de aquí arriba; no se afirma nada nuevo."
+    }
+  ],
+
+  "redes": {
+    "instagram": "https://www.instagram.com/cimo.hn/",
+    "facebook": "https://www.facebook.com/cimohn/",
+    "tiktok": "https://www.tiktok.com/@cimo491"
+  }
+}

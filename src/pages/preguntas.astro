@@ -1,0 +1,185 @@
+---
+import Base from '../layouts/Base.astro';
+import Titular from '../components/Titular.astro';
+import Boton from '../components/Boton.astro';
+import faq from '../data/faq.json';
+
+// Preguntas frecuentes bajo restricción máxima.
+//
+// Se responden SEIS, y solo con datos que constan en las fuentes. Las otras
+// CINCO se muestran listadas y SIN RESPONDER, diciendo por qué.
+//
+// Podría parecer que una FAQ a medias queda peor que una completa. Es al revés:
+// una respuesta inventada sobre precios, seguros o quién te va a atender no es
+// relleno de maqueta, es información falsa sobre salud y dinero que alguien va
+// a leer y creer. Listarlas sin responder además le dice al cliente exactamente
+// qué tiene que mandarnos.
+//
+// El acordeón es <details name="faq">: agrupa por nombre, así que abrir uno
+// cierra el anterior sin una línea de JavaScript, y el navegador aporta gratis
+// el teclado y el anuncio al lector de pantalla.
+
+const respondidas = faq.filter((p) => !p.pendiente);
+const pendientes = faq.filter((p) => p.pendiente);
+---
+
+<Base
+  titulo="Preguntas frecuentes"
+  descripcion="Horario, ubicación, cómo agendar cita y qué es la ortodoncia invisible con Invisalign e iTero 5D Plus."
+  actual="preguntas"
+>
+  <div class="contenedor cabeza">
+    <Titular nivel={1} previo="Preguntas frecuentes" resalte="responder">Lo que sí podemos</Titular>
+  </div>
+
+  <div class="contenedor cuerpo">
+    <div class="acordeon">
+      {respondidas.map((p) => (
+        <details name="faq">
+          <summary>{p.pregunta}</summary>
+          <div class="respuesta"><p>{p.respuesta}</p></div>
+        </details>
+      ))}
+    </div>
+
+    <aside class="pendientes">
+      <h2 class="versalita">Todavía sin respuesta</h2>
+      <p class="intro">
+        Estas cinco no se responden porque el dato no consta en ninguna fuente
+        verificable. Preferimos dejarlas a la vista antes que inventar una
+        respuesta sobre precios o sobre quién te va a atender.
+      </p>
+      <ul>
+        {pendientes.map((p) => (
+          <li>
+            <strong>{p.pregunta}</strong>
+            <span>{p.porQue}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="cta-pend">
+        Mientras tanto, cualquiera de las cinco te la contestan por WhatsApp.
+      </p>
+      <Boton variante="contorno" tamano="sm" href="contacto.html">Ir a contacto</Boton>
+    </aside>
+  </div>
+</Base>
+
+<script is:inline>
+  (function () {
+    var acordeon = document.querySelector('.acordeon');
+    if (!acordeon || !Element.prototype.animate) return;
+
+    // Sin JavaScript —o con el movimiento reducido— <details> hace lo suyo de
+    // siempre: abre de golpe. Que es lo que habia antes, asi que no se pierde
+    // nada; esto solo suaviza donde se puede.
+    var quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (quieto) return;
+
+    var DUR = 340, CURVA = 'cubic-bezier(.22,.61,.36,1)';
+    var fichas = [].slice.call(acordeon.querySelectorAll('details'));
+
+    function animar(d, abriendo, alFinal) {
+      var cuerpo = d.querySelector('.respuesta');
+      if (!cuerpo) { d.open = abriendo; if (alFinal) alFinal(); return; }
+      if (d._anim) d._anim.cancel();
+      if (abriendo) d.open = true;            // hay que abrirlo para poder medirlo
+      var h = cuerpo.scrollHeight;
+      cuerpo.style.overflow = 'hidden';
+      var de = abriendo ? [{ height: '0px', opacity: 0 }, { height: h + 'px', opacity: 1 }]
+                        : [{ height: h + 'px', opacity: 1 }, { height: '0px', opacity: 0 }];
+      d._anim = cuerpo.animate(de, { duration: DUR, easing: CURVA });
+      d._anim.onfinish = function () {
+        cuerpo.style.overflow = '';
+        if (!abriendo) d.open = false;
+        d._anim = null;
+        if (alFinal) alFinal();
+      };
+    }
+
+    fichas.forEach(function (d) {
+      d.querySelector('summary').addEventListener('click', function (e) {
+        // Se toma el control del toggle: el navegador lo haria instantaneo, y
+        // con name="faq" ademas cerraria las hermanas de golpe mientras esta
+        // se abre despacio, que se ve peor que no animar nada.
+        e.preventDefault();
+        var abriendo = !d.open;
+        fichas.forEach(function (o) { if (o !== d && o.open) animar(o, false); });
+        animar(d, abriendo);
+      });
+    });
+  })();
+</script>
+
+<style>
+  .cabeza { padding-block: var(--s-5) var(--s-3) }
+  .cuerpo {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: var(--s-5);
+    align-items: start;
+    padding-bottom: var(--s-5);
+  }
+
+  .acordeon { display: grid }
+
+  /* El despliegue lo anima el script de abajo, no el CSS.
+     Se intento con `::details-content` + `interpolate-size`, que es la via
+     nativa y sin JavaScript... y ROMPIO EL ACORDEON: el contenido quedaba
+     recortado a cero y las respuestas dejaban de verse. Compilaba, `verificar`
+     salia en verde y solo se vio midiendo la caja del <details> en el navegador
+     —187 px con la transicion quitada, 109 px con ella—. No se reintenta sin
+     esa medicion delante. */
+  details { border-top: 1px solid var(--line) }
+  details:last-of-type { border-bottom: 1px solid var(--line) }
+
+  summary {
+    cursor: pointer;
+    list-style: none;
+    padding: var(--s-3) var(--s-4) var(--s-3) 0;
+    position: relative;
+    font-family: var(--font-titulo);
+    font-size: var(--step-1);
+    color: var(--ink);
+  }
+  summary::-webkit-details-marker { display: none }
+  summary::after {
+    content: '';
+    position: absolute;
+    right: var(--s-1);
+    top: 50%;
+    width: 10px; height: 10px;
+    border-right: 1.5px solid var(--marca-text);
+    border-bottom: 1.5px solid var(--marca-text);
+    transform: translateY(-70%) rotate(45deg);
+    transition: transform .34s var(--ease);
+  }
+  details[open] summary::after { transform: translateY(-30%) rotate(-135deg) }
+  summary:hover { color: var(--marca-text) }
+
+  .respuesta { padding-bottom: var(--s-3) }
+  .respuesta p { color: var(--ink-soft) }
+
+  .pendientes {
+    background: var(--surface-alterna);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--s-3);
+    display: grid;
+    gap: var(--s-2);
+    justify-items: start;
+  }
+  .pendientes h2 { margin: 0 }
+  .intro { font-size: var(--step--1); color: var(--ink-soft) }
+  .pendientes ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2) }
+  /* Separadas por una línea horizontal, no por una barra vertical de color:
+     la lista es una secuencia, no una pila de avisos. */
+  .pendientes li { display: grid; gap: 2px; border-top: 1px solid var(--line); padding-top: var(--s-2) }
+  .pendientes strong { font-family: var(--font-titulo); font-weight: 400; font-size: var(--step-0); color: var(--ink) }
+  .pendientes span { font-size: var(--step--2); color: var(--ink-faint) }
+  .cta-pend { font-size: var(--step--1); color: var(--ink-soft) }
+
+  @media (max-width: 60rem) {
+    .cuerpo { grid-template-columns: 1fr }
+  }
+</style>

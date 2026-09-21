@@ -1,0 +1,190 @@
+---
+import clinica from '../data/clinica.json';
+import { comoHora, comoRango, enMinutos, NOMBRE_DIA } from '../lib/horarios';
+import { enlaceWhatsApp } from '../lib/whatsapp';
+
+// Barra de estado, encima de la cabecera. Dice UNA cosa: si la clínica está
+// abierta ahora mismo.
+//
+// NO es sticky. La cabecera sí lo es; si la barra también lo fuera, robaría
+// altura de pantalla en cada scroll de un móvil para repetir un dato que ya se
+// leyó. Se ve al llegar, se va al bajar.
+//
+// El estado se calcula EN EL NAVEGADOR, no aquí. Este sitio es estático: lo que
+// se compile en el frontmatter se congela en el HTML, y un archivo que dice
+// «Abierto ahora» a las once de la noche es peor que no decir nada. Lo que sí se
+// precalcula es el formato de las horas —minutos y cadena ya hechos— para que el
+// script no vuelva a formatear una hora: ese cálculo vive en lib/horarios.ts y
+// solo ahí. El sitio hermano ya se partió por tener dos formateadores de horas.
+//
+// Sin JavaScript se queda el horario fijo, que es cierto siempre.
+
+const sede = clinica.sedes[0];
+const { direccion, horarios, cerrado, zonaHoraria } = sede;
+
+const wa = enlaceWhatsApp(clinica.whatsapp.numero, clinica.whatsapp.plantillas.general);
+
+// dow -> tramo, con las horas ya en minutos y ya formateadas.
+const semana: Record<number, { a: number; c: number; abre: string; cierra: string }> = {};
+for (const t of horarios) {
+  for (const d of t.dow) {
+    semana[d] = { a: enMinutos(t.apertura), c: enMinutos(t.cierre), abre: comoHora(t.apertura), cierra: comoHora(t.cierre) };
+  }
+}
+
+const datos = JSON.stringify({ tz: zonaHoraria, dias: NOMBRE_DIA, semana });
+
+// Lo que se ve antes de que corra el script y lo que ve quien no tiene JavaScript.
+const fijo = horarios.map((t) => `${t.dias} ${comoRango(t)}`).join(' · ')
+  + (cerrado?.length ? ` · ${cerrado.map((t) => t.dias).join(', ')} cerrado` : '');
+---
+
+<div class="barra">
+  <div class="dentro">
+    <p class="estado" data-horario={datos}>
+      <span class="punto" aria-hidden="true"></span>
+      <strong data-estado-titulo></strong><span class="detalle" data-estado-detalle>{fijo}</span>
+    </p>
+
+    <p class="datos">
+      <span class="dir">{direccion.calle}, {direccion.edificio}, {direccion.detalle}</span>
+      {/* El auricular es la señal universal de «por aquí se contacta», y a
+          13 px se lee de un vistazo mejor que la palabra. Pero el enlace ABRE
+          WHATSAPP, no marca: por eso el nombre accesible lo dice entero. Un
+          icono puede ser un atajo visual; el nombre que oye un lector de
+          pantalla no puede prometer una llamada que no va a ocurrir. */}
+      <a
+        href={wa}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-wa-contacto
+        aria-label={`Escribir por WhatsApp al ${clinica.whatsapp.display}`}
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+        </svg>
+        <span>{clinica.whatsapp.display}</span>
+      </a>
+    </p>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var el = document.querySelector('[data-horario]');
+    if (!el) return;
+
+    var d;
+    try { d = JSON.parse(el.getAttribute('data-horario')); } catch (e) { return; }
+
+    // La hora de la CLÍNICA, no la del visitante: quien consulta desde otro huso
+    // quiere saber si CIMO está abierta en Tegucigalpa, no en su ciudad.
+    var g = {};
+    try {
+      var partes = new Intl.DateTimeFormat('en-US', {
+        timeZone: d.tz, hour12: false, weekday: 'short', hour: '2-digit', minute: '2-digit',
+      }).formatToParts(new Date());
+      for (var i = 0; i < partes.length; i++) g[partes[i].type] = partes[i].value;
+    } catch (e) { return; }   // sin Intl se queda el horario fijo, que no miente
+
+    var DOW = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    var dow = DOW[g.weekday];
+    if (dow === undefined) return;
+    var min = (parseInt(g.hour, 10) % 24) * 60 + parseInt(g.minute, 10);
+
+    var hoy = d.semana[dow];
+    var titulo, detalle, clase;
+
+    if (hoy && min >= hoy.a && min < hoy.c) {
+      clase = 'es-abierto';
+      titulo = 'Abierto ahora';
+      detalle = ' · cierra a las ' + hoy.cierra;
+    } else {
+      clase = 'es-cerrado';
+      titulo = 'Cerrado';
+      detalle = '';
+      if (hoy && min < hoy.a) {
+        detalle = ' · abre hoy a las ' + hoy.abre;
+      } else {
+        for (var k = 1; k <= 7; k++) {
+          var sig = d.semana[(dow + k) % 7];
+          if (sig) {
+            detalle = ' · abre ' + (k === 1 ? 'mañana' : 'el ' + d.dias[(dow + k) % 7]) + ' a las ' + sig.abre;
+            break;
+          }
+        }
+      }
+    }
+
+    el.querySelector('[data-estado-titulo]').textContent = titulo;
+    el.querySelector('[data-estado-detalle]').textContent = detalle;
+    // classList.add, NUNCA className: Astro marca cada elemento con su atributo
+    // de ámbito y reescribir la lista entera dejaría el elemento fuera de su CSS.
+    el.classList.add(clase);
+  })();
+</script>
+
+<style>
+  .barra {
+    background: var(--surface-alterna);
+    border-bottom: 1px solid var(--line);
+  }
+  .dentro {
+    max-width: var(--container);
+    margin-inline: auto;
+    padding: 6px var(--s-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    font-family: var(--font-datos);
+    font-size: var(--step--2);
+    line-height: 1.5;
+  }
+
+  p { margin: 0 }
+
+  /* El estado es el que cede: sin JavaScript su texto es el horario entero y
+     puede envolver a dos líneas. La dirección no envuelve nunca — una dirección
+     partida por la mitad se lee como dos. */
+  .estado { display: flex; align-items: baseline; gap: 0.5ch; min-width: 0; color: var(--text-secundario) }
+
+  /* El punto solo aparece cuando hay un estado que señalar. Antes de que corra
+     el script se ve el horario fijo, y un punto de color sin estado no dice nada. */
+  .punto { display: none; width: 8px; height: 8px; border-radius: 50%; flex: none; translate: 0 -1px }
+  .es-abierto .punto, .es-cerrado .punto { display: block }
+  .es-abierto .punto { background: var(--abierto) }
+  .es-cerrado .punto { background: var(--text-terciario) }
+
+  /* VERDE cuando está abierta. Cerrada NO va en rojo: el rojo dice «error» y que
+     una clínica no abra el domingo no es un error, es su horario. */
+  .es-abierto strong { color: var(--abierto); font-weight: 500 }
+  .es-cerrado strong { color: var(--text-secundario); font-weight: 500 }
+  .detalle { color: var(--text-secundario) }
+
+  .datos { display: flex; align-items: center; gap: var(--s-2); flex: none; color: var(--text-terciario) }
+  .dir { white-space: nowrap }
+  .datos a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: var(--font-datos);
+    color: var(--text-marca);
+    white-space: nowrap;
+  }
+  /* El auricular no se subraya con el número: el subrayado es del texto. */
+  .datos a svg { flex: none }
+  .datos a span { text-decoration: underline; text-underline-offset: 0.18em }
+
+  /* Por debajo de 76rem la dirección ya no cabe entera, y se va antes de
+     estorbar. Sigue en el pie de todas las páginas; el WhatsApp aguanta más
+     porque es más corto y es la acción. */
+  @media (max-width: 76rem) {
+    .dir { display: none }
+  }
+  @media (max-width: 40rem) {
+    .datos { display: none }
+    .dentro { justify-content: flex-start }
+  }
+</style>

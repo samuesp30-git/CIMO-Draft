@@ -1,0 +1,157 @@
+---
+import clinica from '../data/clinica.json';
+import { comoRango } from '../lib/horarios';
+import AccionesMapa from './AccionesMapa.astro';
+import MapaMarco from './MapaMarco.astro';
+import Titular from './Titular.astro';
+
+// Horario, dirección y mapa en un solo bloque, porque es una sola pregunta:
+// «¿dónde está y cuándo puedo ir?». Partirla en dos secciones obliga a mirar a
+// dos sitios para decidir una cosa.
+//
+// Vive en el inicio y en contacto, y por eso es un componente: la dirección de
+// CIMO ya aparecía en el pie y en el diálogo de cita, y una cuarta copia escrita
+// a mano es la que un día se queda vieja. Todas leen clinica.sedes[0].
+//
+// El aviso de dirección pendiente va DENTRO, pegado al mapa. No es una nota al
+// pie: mientras el cliente no confirme el local tras la mudanza de mayo de 2026,
+// el mapa apunta a la última dirección publicada, y quien lo mire tiene que
+// saberlo antes de subirse al carro. verificar.mjs comprueba que estén juntos.
+
+interface Props {
+  /** El inicio ya tiene un h1; aquí el titular baja a h2. */
+  nivel?: 2 | 3;
+  class?: string;
+}
+const { nivel = 2, class: clase } = Astro.props;
+
+const sede = clinica.sedes[0];
+const { direccion, horarios, cerrado } = sede;
+---
+
+<section class:list={['ubicacion', clase]} id="donde-estamos">
+  <div class="contenedor rejilla">
+    <div class="ficha">
+      <Titular nivel={nivel} previo={direccion.ciudad} resalte="dirección" class="revelable">Horarios y</Titular>
+
+      <ul class="horario">
+        {horarios.map((t) => (
+          <li><span>{t.dias}</span><strong>{comoRango(t)}</strong></li>
+        ))}
+        {cerrado?.map((t) => (
+          <li><span>{t.dias}</span><strong class="cerrado">Cerrado</strong></li>
+        ))}
+      </ul>
+
+      <div class="dato">
+        {/* Etiqueta de campo, no encabezado de sección: era un <h3> a 13 px. */}
+        <p class="et">Dirección</p>
+        <address>
+          {direccion.calle}, {direccion.edificio}, {direccion.detalle}<br />
+          <span class="tenue">{direccion.referencia}</span><br />
+          {direccion.ciudad}, {direccion.pais}
+        </address>
+      </div>
+
+      {/* Aquí NO va el WhatsApp, aunque el diseño de referencia ponga un teléfono
+          en este bloque. Ya está en la barra de arriba, en el icono flotante, en
+          el pie y en la lista de contacto de esta misma página: una quinta copia
+          en la misma pantalla no añade un camino, solo ruido. */}
+      <AccionesMapa />
+    </div>
+
+    <div class="lado">
+      <MapaMarco />
+
+      {sede.direccionPendiente && (
+        <p class="aviso" data-direccion-pendiente>
+          <strong>Confirma antes de venir.</strong> En mayo de 2026 la clínica
+          anunció un cambio de local y todavía no se ha podido verificar la
+          dirección definitiva. El mapa señala la última dirección publicada.
+          Escríbenos por WhatsApp y te la confirman.
+        </p>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Era blanco liso, y con el mapa al lado se leía como un hueco en vez de como
+     una sección. El degradado claro ya existía y solo se usaba en la portada.
+
+     Color sólido debajo y degradado encima, separados (DESIGN.md §4b): con el
+     atajo `background` el color se queda en transparente, y si el degradado no
+     pinta el texto cae sobre nada.
+
+     La parada azul NO se profundizó. Medido: --text-terciario —que es el color
+     de los rótulos `.et` y de `.tenue`, y va directo sobre esta superficie—
+     aguanta hasta un 31.7 % de --marca; el oro de `.aviso strong` hasta 26.6 %.
+     --marca-suave está en 23.2 % y conserva el margen. */
+  .ubicacion { background-color: var(--surface-page) }
+
+  /* La luz se PIDE desde la página, no se da por defecto, porque este bloque
+     vive en dos sitios con vecinos distintos:
+       · contacto  — va detrás de una cabecera blanca. Aquí sí: separa.
+       · inicio    — va justo después de .servicios, que YA lleva este mismo
+                     radial anclado al 88 %. Dos iguales seguidos no son ritmo,
+                     son una sábana; es el mismo error que el proyecto ya evitó
+                     con la trama de círculos («marca UN objeto, no toda sección
+                     oscura», index.astro).
+     Color sólido debajo y degradado encima, separados (DESIGN.md §4b). */
+  .ubicacion.con-luz { background-image: var(--degradado-claro) }
+  .rejilla {
+    padding-block: var(--s-5);
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: var(--s-5);
+    align-items: start;
+  }
+  .ficha { display: grid; gap: var(--s-3); align-content: start }
+  .lado { display: grid; gap: var(--s-2) }
+
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1) }
+  .horario li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-2);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+  }
+  .horario span, .horario strong { font-family: var(--font-datos); font-size: var(--step--1) }
+  .horario strong { font-weight: 500 }
+  .cerrado { color: var(--text-terciario) !important; font-weight: 400 !important }
+
+  .dato { display: grid; gap: 2px }
+  .et {
+    font-family: var(--font-datos);
+    font-size: var(--step--2);
+    font-weight: 500;
+    letter-spacing: var(--track-versalita);
+    text-transform: uppercase;
+    color: var(--text-terciario);
+    margin: 0;
+  }
+  address { font-style: normal; font-size: var(--step--1); line-height: 1.8 }
+  .tenue { color: var(--text-terciario) }
+
+  /* El oro va en la PALABRA, no en una barra al costado. Una franja de color de
+     3 px pegada al borde izquierdo de un aviso es hoy uno de los tells más
+     reconocibles de interfaz generada, y aquí además no hacía falta: lo que
+     tiene que saltar es «Confirma antes de venir», y eso se dice con la tinta
+     del propio texto. El fondo ya separa el aviso de lo que lo rodea. */
+  .aviso {
+    margin: 0;
+    background: var(--surface-alterna);
+    border-radius: var(--radius);
+    padding: var(--s-2) var(--s-3);
+    font-size: var(--step--1);
+    color: var(--text-secundario);
+  }
+  .aviso strong { color: var(--text-seccion); font-weight: 700 }
+
+  @media (max-width: 60rem) {
+    .rejilla { grid-template-columns: 1fr; gap: var(--s-4) }
+    /* El mapa primero en pantalla estrecha: es lo que se viene a ver. */
+    .lado { order: -1 }
+  }
+</style>

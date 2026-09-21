@@ -1,0 +1,87 @@
+---
+import BandaCierre from '../components/BandaCierre.astro';
+import Base from '../layouts/Base.astro';
+import Titular from '../components/Titular.astro';
+import Ubicacion from '../components/Ubicacion.astro';
+import clinica from '../data/clinica.json';
+import { enlaceWhatsApp } from '../lib/whatsapp';
+
+// Contacto lleva también la ubicación.
+//
+// Con UNA sede, una página «Ubicaciones» aparte se queda en nada: una dirección
+// sola no sostiene una página, y partir dirección y contacto obliga al visitante
+// a ir y volver para juntar dos datos que usa a la vez.
+//
+// DISPARADOR PARA PARTIRLA: cuando entre la sede de La Entrada, Copán. Ahí sí
+// hay dos direcciones, dos horarios y dos mapas, y entonces `ubicaciones.html`
+// se justifica sola.
+
+const { direccion } = clinica.sedes[0];
+const waGeneral = enlaceWhatsApp(clinica.whatsapp.numero, clinica.whatsapp.plantillas.general);
+---
+
+<Base
+  titulo="Contacto y ubicación"
+  descripcion={`CIMO en ${direccion.ciudad}: ${direccion.calle}, ${direccion.edificio}. WhatsApp ${clinica.whatsapp.display}.`}
+  actual="contacto"
+>
+  <div class="contenedor cabeza">
+    {/* La firma NUNCA lleva una marca ajena: «WhatsApp» tiene su propio
+        logotipo y ponerlo en una caligrafía decorativa lo deforma. El script se
+        reserva para las palabras de CIMO. */}
+    <Titular nivel={1} previo="Contacto" resalte="escribirnos">La vía más rápida es</Titular>
+    <p class="entradilla">
+      Escríbenos y te confirman disponibilidad. También puedes solicitar la cita
+      desde este sitio: se elige el día y la clínica confirma la hora.
+    </p>
+  </div>
+
+  {/* Horario, dirección y mapa: la misma pregunta, un solo bloque. Antes eran
+      dos columnas separadas y el mapa era un Marcador, porque no se ponía mapa
+      de una dirección sin confirmar. Ahora sí lo hay: consulta a Google POR LA
+      DIRECCIÓN PUBLICADA, no por unas coordenadas inventadas, y el aviso de la
+      mudanza va pegado al mapa. Ver la cabecera de MapaMarco.astro. */}
+  <Ubicacion class="con-luz" />
+
+  <div class="contenedor rejilla">
+    <section class="bloque">
+      <h2 class="versalita">Cómo contactarnos</h2>
+      <ul class="vias">
+        {/* Una sola entrada para el 9770-3774. Antes figuraba dos veces —una como
+            WhatsApp y otra como «Teléfono»— y era el MISMO número: una lista que
+            repite un dato obliga a leerla dos veces para descubrir que no hacía
+            falta. La clínica atiende por WhatsApp, así que esa es la entrada. */}
+        <li>
+          <span class="et">WhatsApp</span>
+          <a href={waGeneral} target="_blank" rel="noopener noreferrer" data-wa-contacto>{clinica.whatsapp.display}</a>
+        </li>
+        <li>
+          <span class="et">Correo</span>
+          <a href={`mailto:${clinica.email}`}>{clinica.email}</a>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  {/* El CTA estaba aquí dentro, en una caja sin fondo al final de una columna
+      de 34 rem. Esta página no tenía NI UNA superficie: blanca de arriba abajo,
+      así que el control más importante de la página no se distinguía de una
+      lista de enlaces. Ahora cierra la página a sangre, como el inicio. */}
+  <BandaCierre>¿Prefieres que te escriban? Solicita la cita y te confirman la hora.</BandaCierre>
+</Base>
+
+<style>
+  .cabeza { padding-block: var(--s-5) var(--s-3); display: grid; gap: var(--s-2) }
+  .entradilla { font-size: var(--step-1); color: var(--ink-soft) }
+
+  /* Horario, dirección y mapa se fueron a Ubicacion.astro, que los comparte con
+     el inicio. Aquí abajo queda solo cómo escribir. */
+  .rejilla { padding-bottom: var(--s-5) }
+  .bloque { display: grid; gap: var(--s-2); align-content: start; max-width: 34rem }
+
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1) }
+  .vias li { display: grid; gap: 2px }
+  .et { font-family: var(--font-datos); font-size: var(--step--2); letter-spacing: var(--track-versalita); text-transform: uppercase; color: var(--ink-faint) }
+  .vias a { font-family: var(--font-datos); font-size: var(--step-1) }
+
+</style>

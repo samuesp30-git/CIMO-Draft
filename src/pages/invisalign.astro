@@ -1,0 +1,160 @@
+---
+import CitaCTA from '../components/CitaCTA.astro';
+import Base from '../layouts/Base.astro';
+import Titular from '../components/Titular.astro';
+import Boton from '../components/Boton.astro';
+import BandaCierre from '../components/BandaCierre.astro';
+import Marcador from '../components/Marcador.astro';
+import clinica from '../data/clinica.json';
+
+// Página propia de Invisalign, no una línea en una lista de servicios.
+//
+// Cuatro de las doce publicaciones recientes de CIMO lo promocionan y el
+// escáner iTero 5D Plus llegó en julio de 2026. «Mira cómo va a quedar tu
+// sonrisa antes de empezar» es una promesa concreta y visual que ninguna lista
+// transmite, y es lo más diferenciador que la clínica tiene hoy.
+
+const escaner = clinica.tecnologia[0];
+
+const pasos = [
+  ['Valoración', 'Se revisa tu caso y se decide si los alineadores son la opción adecuada para ti.'],
+  ['Escaneo', `Con el ${escaner.nombre} se toma un modelo digital de tu boca. Sin pasta ni moldes.`],
+  ['Simulación', 'Ves una proyección de cómo podría quedar tu sonrisa antes de empezar el tratamiento.'],
+  ['Tratamiento', 'Se entregan los alineadores por etapas, con controles de seguimiento en la clínica.'],
+];
+---
+
+<Base
+  titulo="Ortodoncia invisible con Invisalign"
+  descripcion="Alineadores Invisalign planificados con escáner iTero 5D Plus en Tegucigalpa. Ves una simulación de tu sonrisa antes de empezar."
+  actual="invisalign"
+>
+  <section class="hero">
+    <div class="contenedor rejilla">
+      <div class="texto">
+        {/* El resalte va corto A PROPÓSITO: la firma se compone a 1.92× el
+            cuerpo del titular, así que sus líneas son mucho más altas. Si el
+            script envuelve, el interlineado se descuadra. Regla: el resalte no
+            debe pasar de dos o tres palabras. */}
+        <Titular nivel={1} previo="Invisalign · iTero 5D Plus" resalte="antes de empezar">
+          Mira tu sonrisa
+        </Titular>
+        <p class="entradilla">
+          Alineadores transparentes y removibles, sin brackets ni alambres. Se
+          planifican con un escáner que toma un modelo digital de tu boca y
+          proyecta el resultado antes de que empiece el tratamiento.
+        </p>
+        <div class="acciones">
+          <CitaCTA tamano="lg" texto="Agendar valoración" />
+        </div>
+      </div>
+      <Marcador alto={320} texto="Fotografía del escáner y de la clínica pendiente" pendiente="fotografia" />
+    </div>
+  </section>
+
+  <section class="pasos-sec">
+    <div class="contenedor">
+      <Titular nivel={2} previo="Cómo funciona" resalte="cuatro pasos">Son</Titular>
+      <ol class="pasos">
+        {pasos.map(([titulo, texto], i) => (
+          <li>
+            <span class="num">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{titulo}</h3>
+            <p>{texto}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="escaner">
+    <div class="contenedor rejilla-esc">
+      <div>
+        <h2 class="versalita">El escáner</h2>
+        <h3>{escaner.nombre}</h3>
+        <p>{escaner.que}</p>
+        <p class="desde">En la clínica desde {escaner.desde}.</p>
+      </div>
+      <div class="comparativa">
+        <h3>¿Brackets o alineadores?</h3>
+        <p>
+          Los alineadores son removibles y discretos; los brackets siguen siendo
+          la opción indicada en muchos casos. Cuál te conviene depende de tu
+          caso, y eso se decide en la valoración, no en una página web.
+        </p>
+        <Boton variante="texto" href="servicios.html#brackets">Ver ortodoncia con brackets →</Boton>
+      </div>
+    </div>
+  </section>
+
+  {/* La página que más vende terminaba en un enlace de texto a brackets: sin
+      CTA de cita y sin una sola superficie oscura después de la portada. El
+      cierre recoge lo que acaba de decir el párrafo de arriba —que eso se
+      decide en la valoración— y da el control para pedirla. */}
+  <BandaCierre>Si quieres saber si tu caso es para alineadores, empieza por la valoración.</BandaCierre>
+</Base>
+
+<style>
+  .rejilla {
+    padding-block: var(--s-5);
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: var(--s-5);
+    align-items: center;
+  }
+  .texto { display: grid; gap: var(--s-3) }
+  .entradilla { font-size: var(--step-1); color: var(--ink-soft) }
+  .acciones { display: flex; gap: var(--s-2); flex-wrap: wrap }
+
+  /* Color sólido debajo, degradado encima y separados (DESIGN.md §4b). Los
+     cuatro pasos del tratamiento iban sobre un gris plano; el degradado los
+     separa del hero sin meter una línea más. */
+  .pasos-sec {
+    background-color: var(--surface-alterna);
+    background-image: var(--degradado-claro);
+    border-block: 1px solid var(--line);
+  }
+  .pasos-sec .contenedor { padding-block: var(--s-5); display: grid; gap: var(--s-3) }
+  .pasos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-2) }
+  .pasos li {
+    background: var(--surface-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius);
+    padding: var(--s-3);
+    display: grid;
+    gap: var(--s-1);
+    align-content: start;
+  }
+  .num {
+    font-family: var(--font-datos);
+    font-size: var(--step--2);
+    font-weight: 500;
+    letter-spacing: var(--track-versalita);
+    color: var(--text-seccion);
+  }
+  .pasos h3 { font-size: var(--step-2) }
+  .pasos p { font-size: var(--step--1); color: var(--ink-soft) }
+
+  .escaner .contenedor { padding-block: var(--s-5) }
+  .rejilla-esc { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5) }
+  .rejilla-esc h3 { font-size: var(--step-2); margin-block: var(--s-1) }
+  .rejilla-esc p { color: var(--ink-soft) }
+  .desde { font-family: var(--font-datos); font-size: var(--step--1); color: var(--ink-faint); margin-top: var(--s-1) }
+  .comparativa {
+    background: var(--surface-card-marca);
+    border-radius: var(--radius);
+    padding: var(--s-3);
+    display: grid;
+    gap: var(--s-1);
+    align-content: start;
+    justify-items: start;
+  }
+
+  @media (max-width: 60rem) {
+    .rejilla, .rejilla-esc { grid-template-columns: 1fr }
+    .pasos { grid-template-columns: repeat(2, 1fr) }
+  }
+  @media (max-width: 34rem) {
+    .pasos { grid-template-columns: 1fr }
+  }
+</style>

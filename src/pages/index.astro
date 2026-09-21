@@ -1,0 +1,245 @@
+---
+import PortadaFoto from '../components/PortadaFoto.astro';
+import Base from '../layouts/Base.astro';
+import Titular from '../components/Titular.astro';
+import Boton from '../components/Boton.astro';
+import Ubicacion from '../components/Ubicacion.astro';
+import clinica from '../data/clinica.json';
+import servicios from '../data/servicios.json';
+
+const escaner = clinica.tecnologia[0];
+const tresPrimeros = servicios.slice(0, 3);
+---
+
+<Base
+  titulo="Odontología para toda la familia en Tegucigalpa"
+  descripcion={clinica.descripcion}
+  actual="inicio"
+>
+  <PortadaFoto />
+
+  {/* El panel del escáner era la columna derecha de la portada. Ahora la
+      portada la ocupa la fotografía, así que baja aquí y gana título propio: en
+      su sitio anterior no lo necesitaba porque el h1 de al lado se lo prestaba.
+
+      Sigue siendo lo PRIMERO después de la foto, y eso es deliberado. Es la
+      única razón para elegir esta clínica que ninguna otra de Tegucigalpa puede
+      copiar, y no depende de que el cliente mande una sola foto. */}
+  <section class="escaner">
+    <div class="contenedor rejilla">
+      <div class="texto">
+        <Titular nivel={2} previo="Tecnología" resalte="antes de empezar" class="revelable">El resultado</Titular>
+        <p class="entradilla">{clinica.presentacion[1]}</p>
+      </div>
+
+      {/* Aquí había un rectángulo punteado de 340 px que decía «fotografía
+          pendiente del cliente». Era el objeto MÁS GRANDE de la primera
+          pantalla, y lo que anunciaba era que el negocio no está terminado.
+
+          Un hueco declarado nombra un trabajo —un ancla y una prueba— no una
+          excusa para esperar sentados. El trabajo de esta columna es dar una
+          razón para elegir ESTA clínica, y esa razón ya existe y no depende de
+          que el cliente mande nada: el escáner que enseña la sonrisa terminada
+          antes de empezar. Estaba en la penúltima banda de la página, en una
+          línea de texto, mientras el hueco ocupaba la portada.
+
+          La fotografía sigue pendiente y sigue declarada en pendientes.json;
+          simplemente ya no bloquea el inicio, porque cuando llegue su sitio son
+          servicios, contacto e invisalign, no este. */}
+      <div class="promesa revelable">
+        <p class="et">{escaner.nombre}</p>
+        <ol>
+          {escaner.promesa.map((p, i) => (
+            <li class:list={{ remate: i === escaner.promesa.length - 1 }}>
+              <span class="n" aria-hidden="true">{i + 1}</span>
+              <div>
+                <strong>{p.titulo}</strong>
+                <p>{p.texto}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="servicios">
+    <div class="contenedor">
+      <Titular nivel={2} previo="Servicios" resalte="que se ofrece hoy" class="revelable">Lo</Titular>
+
+      <div class="tarjetas">
+        {tresPrimeros.map((s) => (
+          <article class="tarjeta">
+            <h3>{s.nombre}</h3>
+            <p>{s.resumen}</p>
+          </article>
+        ))}
+      </div>
+
+      <p class="mas"><a href="servicios.html">Ver los cinco servicios</a></p>
+    </div>
+  </section>
+
+  <Ubicacion />
+
+  <section class="franja">
+    <div class="contenedor rejilla-franja">
+      {/* Esta banda decía «Mira cómo va a quedar tu sonrisa» y hablaba del
+          escáner. Ya no: eso lo dice la portada, y repetirlo aquí —en el mismo
+          tono oscuro y con el mismo rótulo— convertía a las dos en copias
+          flojas la una de la otra. La portada da la RAZÓN para elegir CIMO; esta
+          banda es la ruta al TRATAMIENTO, que es otra cosa. */}
+      <Titular nivel={2} previo="Invisalign" resalte="ni alambres" sobreOscuro class="revelable">
+        Ortodoncia sin brackets
+      </Titular>
+      <div class="franja-lado">
+        <p>Se entregan por etapas, con controles de seguimiento en la clínica.</p>
+        <Boton variante="marca" tamano="lg" href="invisalign.html">Ver Invisalign</Boton>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .escaner { background: var(--base) }
+  .rejilla {
+    padding-block: var(--s-5);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-5);
+    align-items: center;
+  }
+  .texto { display: grid; gap: var(--s-3) }
+  .entradilla { font-size: var(--step-1); color: var(--ink-soft); max-width: 44ch }
+
+  .acciones { display: flex; gap: var(--s-2); align-items: center; flex-wrap: wrap }
+
+  /* NO son tres tarjetas. Tres cajas iguales en fila es el contenedor perezoso,
+     y además dirían «tres cosas sueltas» cuando lo que hay es una secuencia:
+     escaneas, ves, decides. Una sola superficie con la cuenta a la izquierda lo
+     dice sin una palabra, y el último paso pesa más porque es el que importa.
+     Todo con tokens que el sistema ya tenía: nada nuevo. */
+  /* OSCURO, no azul suave. §1 de DESIGN.md: esta marca es de UN SOLO TONO y su
+     diferenciación viene del VALOR y del blanco, no de meter colores. Una
+     tarjeta azul claro al lado de un fondo blanco es una nota al pie; un bloque
+     de tinta partiendo la portada en dos mitades es el mismo gesto que hace el
+     logo, que es una cruz clara sobre un wordmark oscuro. Y rima con la píldora
+     del CTA, que es el otro objeto oscuro de esta pantalla. */
+  .promesa {
+    /* Degradado + nube de puntos. Los dos extremos del degradado pasan
+       contraste con blanco (11.99 y 16.51), así que el texto de encima está a
+       salvo en todo el recorrido; la trama va al 9 % y no mueve la aguja. */
+    /* El color sólido va SIEMPRE debajo del degradado. El atajo `background`
+       deja background-color en transparente, así que si el degradado no pinta
+       —un navegador viejo, una regla que lo pise— el texto blanco quedaría
+       sobre blanco. Además es lo que permite que el barrido de contraste pueda
+       medir esta superficie: un degradado no tiene color computado. */
+    background-color: var(--ink);
+    background-image:
+      var(--trama-puntos),
+      var(--degradado-oscuro);
+    background-size: var(--trama-paso), auto;
+    border-radius: var(--radius);
+    padding: var(--s-4);
+    display: grid;
+    gap: var(--s-3);
+    align-content: center;
+    min-height: 340px;
+  }
+  .promesa .et {
+    font-family: var(--font-datos);
+    font-size: var(--step--2);
+    letter-spacing: var(--track-versalita);
+    text-transform: uppercase;
+    color: var(--marca-sobre-oscuro);
+    margin: 0;
+  }
+  .promesa ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3) }
+  .promesa li { display: grid; grid-template-columns: 1.75rem 1fr; gap: var(--s-2); align-items: baseline }
+  .promesa .n {
+    font-family: var(--font-datos);
+    font-size: var(--step-2);
+    font-weight: 500;
+    color: var(--marca-sobre-oscuro);
+    line-height: 1;
+  }
+  .promesa strong { display: block; font-size: var(--step-1); font-weight: 500; color: var(--base) }
+  .promesa li p { margin: 4px 0 0; font-size: var(--step--1); color: var(--sobre-oscuro) }
+
+  /* El remate cierra la secuencia: sube a la serif del titular y se separa con
+     una línea. Sin él son tres pasos iguales y nadie sabe cuál es el que le
+     interesa; con él, la última línea de la portada es la promesa. */
+  .promesa .remate { border-top: 1px solid var(--sobre-oscuro-suave); padding-top: var(--s-3) }
+  .promesa .remate strong {
+    font-family: var(--font-titulo);
+    font-size: var(--step-3);
+    font-weight: var(--peso-titulo);
+    line-height: var(--lh-titular);
+  }
+  .promesa .remate p { margin-top: var(--s-1) }
+
+  /* Luz que entra por arriba a la derecha, no un relleno plano. Las tres
+     paradas —marca-suave, marca-tenue y blanco— son fondos claros ya
+     verificados: ningún texto del sistema falla contra ninguno de los tres. */
+  .servicios {
+    background-color: var(--surface-alterna);
+    background-image: var(--degradado-claro);
+    border-block: 1px solid var(--line);
+  }
+  .servicios .contenedor { padding-block: var(--s-5); display: grid; gap: var(--s-3) }
+  .tarjetas { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2) }
+  .tarjeta {
+    background: var(--surface-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius);
+    padding: var(--s-3);
+    display: grid;
+    gap: var(--s-1);
+    align-content: start;
+  }
+  .tarjeta h3 { font-size: var(--step-2) }
+  .tarjeta p { font-size: var(--step--1); color: var(--ink-soft) }
+  .mas { font-family: var(--font-datos); font-size: var(--step--1) }
+
+  /* Se come el margen superior del pie. Sin esto quedaba una franja blanca de
+     64 px entre dos bloques oscuros —esta banda y el pie— y una rendija clara
+     entre dos oscuros se lee como una costura mal cosida, no como una decisión.
+     Aquí la sección oscura es la última, así que baja directa al pie. */
+  /* PUNTOS, NO CÍRCULOS. Se probó aquí la trama de círculos de `.banda-oscura`
+     y no cabe, por dos razones que se ven en cuanto se renderiza:
+
+       1. Esta banda no tiene aire. Es una rejilla de dos columnas llenas de
+          borde a borde, y el párrafo de la derecha acaba encima de los trazos.
+          La trama de círculos se justificaba por el hueco, y aquí no lo hay.
+       2. El botón es `marca`. Un círculo de --marca pasando por detrás del
+          borde de un botón de --marca hace que el control pierda su silueta.
+          En las bandas de cierre el botón es blanco sólido y no ocurre.
+
+     La trama de círculos marca UN objeto —el cierre de página— y no «toda
+     superficie oscura». Repetirla en cada fondo oscuro la convertiría en
+     plantilla, que es el mismo motivo por el que solo se revelan los titulares
+     de sección y no cada tarjeta. Para cambiar de opinión basta añadir
+     `banda-oscura` a la clase de esta sección y borrar este bloque. */
+  .franja {
+    background-color: var(--ink);
+    background-image:
+      var(--trama-puntos),
+      var(--degradado-oscuro);
+    background-size: var(--trama-paso), auto;
+    margin-bottom: calc(var(--s-6) * -1);
+  }
+  .rejilla-franja {
+    padding-block: var(--s-5);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--s-4);
+    align-items: center;
+  }
+  .franja-lado { display: grid; gap: var(--s-2); justify-items: start }
+  .franja-lado p { color: var(--sobre-oscuro); font-size: var(--step-0) }
+
+  @media (max-width: 60rem) {
+    .rejilla, .rejilla-franja { grid-template-columns: 1fr }
+    .tarjetas { grid-template-columns: 1fr }
+  }
+</style>

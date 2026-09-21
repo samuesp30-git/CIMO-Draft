@@ -1,0 +1,35 @@
+---
+import Boton from './Boton.astro';
+import clinica from '../data/clinica.json';
+
+// El CTA de cita y su gemelo sin JavaScript, juntos.
+//
+// El botón abre un <dialog>: sin él no puede hacer nada, así que en su lugar se
+// muestra un enlace tel:. Cuál de los dos se ve lo decide la clase `js` del
+// <html>, que el layout pone ANTES del primer pintado — si se decidiera al
+// final, el visitante vería primero el teléfono y luego el botón, con su salto.
+//
+// Van juntos en un componente para que nadie ponga el botón y se olvide del
+// gemelo: el que no tiene JavaScript se quedaría sin ninguna forma de contactar.
+
+interface Props {
+  tamano?: 'sm' | 'md' | 'lg';
+  texto?: string;
+  /** `claro` para fondo oscuro; sobre la portada fotográfica el CTA oscuro
+      desaparecería dentro de la propia foto. */
+  variante?: 'cta' | 'claro';
+  class?: string;
+}
+const { tamano = 'md', texto = 'Agendar cita', variante = 'cta', class: clase } = Astro.props;
+---
+
+<span class:list={['cita-cta', clase]}>
+  <Boton variante={variante} tamano={tamano} pildora data-abrir-cita>{texto}</Boton>
+  <Boton variante={variante} tamano={tamano} pildora href={`tel:${clinica.telefono.href}`} data-cita-tel>
+    Llamar al {clinica.telefono.display}
+  </Boton>
+</span>
+
+<style>
+  .cita-cta { display: contents }
+</style>

@@ -1,0 +1,487 @@
+---
+import clinica from '../data/clinica.json';
+import servicios from '../data/servicios.json';
+import { enMinutos } from '../lib/horarios';
+
+// Diálogo de solicitud de cita. Se monta una vez en el layout y lo abre
+// cualquier [data-abrir-cita].
+//
+// LA DECISIÓN DE PRODUCTO: se elige DÍA, no hora, y todo el texto dice
+// «solicitar», nunca «reservar» ni «confirmar». El sitio no conoce la agenda de
+// la clínica. Un calendario que deja elegir las 3:15 promete algo que nadie
+// puede cumplir, y el paciente se presenta a una hora que no existe.
+//
+// SIN CAMPO DE SEDE: CIMO opera una sola sede en esta fase. Cuando entre La
+// Entrada, Copán, vuelve como <select> — es estado de formulario, que lo
+// gestiona el navegador, no estado de aplicación.
+//
+// El frontmatter PRECALCULA todo lo que el script necesita. Un <script> de
+// Astro que importe de otro módulo deja de incrustarse y sale a /_astro/*.js
+// con ruta absoluta, rompiendo file:// SIN dar ningún error. Por eso los tramos
+// se serializan a un data-atributo en vez de importar la librería en cliente.
+const sede = clinica.sedes[0];
+const tramos = sede.horarios.map((t) => ({ dow: t.dow, cierraMin: enMinutos(t.cierre) }));
+const { numero, plantillas } = clinica.whatsapp;
+---
+
+<dialog
+  class="dialogo"
+  data-agendar
+  data-numero={numero}
+  data-zona={sede.zonaHoraria}
+  data-tramos={JSON.stringify(tramos)}
+  data-plantilla={plantillas.citaCalendario}
+  aria-labelledby="cita-titulo"
+  tabindex="-1"
+>
+  <form method="dialog" class="cerrar-forma">
+    <button class="cerrar" aria-label="Cerrar">&times;</button>
+  </form>
+
+  {/* El paso se parte en CUERPO que se desplaza y PIE anclado. Sin esto, en un
+      teléfono de 375x812 el diálogo mide 774 px y su contenido 922: el botón de
+      enviar caía 12 px por debajo del borde y el visitante veía un formulario
+      entero sin forma de terminarlo. Se podía desplazar, pero nada lo decía. */}
+  <div class="paso" data-paso="formulario">
+    <div class="cuerpo">
+      <h2 id="cita-titulo">Solicitar una cita</h2>
+      <p class="nota">
+        Elige el día que te conviene. La hora la confirma la clínica según su
+        disponibilidad, y te responden por WhatsApp.
+      </p>
+
+      <label class="campo">
+        <span>Tu nombre</span>
+        <input type="text" data-nombre autocomplete="name" placeholder="Nombre y apellido" />
+        <small class="pista">Para que sepan a quién contestar.</small>
+      </label>
+
+      <label class="campo">
+        <span>Qué necesitas</span>
+        <select data-servicio>
+          <option value="Una valoración general">Una valoración general</option>
+          {servicios.map((s) => <option value={s.nombre}>{s.nombre}</option>)}
+        </select>
+      </label>
+
+      <div class="campo">
+        <span class="et">Día que te conviene</span>
+        <div class="cal" data-cal>
+        <div class="cal-cab">
+          <button type="button" data-mes="-1" aria-label="Mes anterior">&lsaquo;</button>
+          <strong data-mes-nombre aria-live="polite"></strong>
+          <button type="button" data-mes="1" aria-label="Mes siguiente">&rsaquo;</button>
+        </div>
+        <table>
+          <caption class="oculto">Elige un día</caption>
+          <thead>
+            <tr>
+              <th><span aria-hidden="true">L</span><span class="oculto">Lunes</span></th>
+              <th><span aria-hidden="true">M</span><span class="oculto">Martes</span></th>
+              <th><span aria-hidden="true">X</span><span class="oculto">Miércoles</span></th>
+              <th><span aria-hidden="true">J</span><span class="oculto">Jueves</span></th>
+              <th><span aria-hidden="true">V</span><span class="oculto">Viernes</span></th>
+              <th><span aria-hidden="true">S</span><span class="oculto">Sábado</span></th>
+              <th><span aria-hidden="true">D</span><span class="oculto">Domingo</span></th>
+            </tr>
+          </thead>
+            <tbody data-cal-cuerpo></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    {/* El día elegido y el botón que lo envía viajan JUNTOS en el pie anclado:
+        ver uno sin el otro es lo que hacía que el visitante tocara una fecha,
+        no viera nada cambiar a su alcance, y cerrara. role="status" porque el
+        cambio también tiene que llegarle a quien no lo ve. */}
+    <div class="pie">
+      <p class="elegido" data-elegido role="status">Ningún día elegido todavía.</p>
+      <div class="acciones">
+        <button type="button" class="btn-wa" data-enviar disabled>Solicitar por WhatsApp</button>
+        <button type="button" class="btn-borde" data-cancelar>Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="paso" data-paso="enviado" hidden>
+    <div class="cuerpo">
+      {/* El titular lo escribe el script: afirmar «Se abrió WhatsApp» sin haber
+          comprobado que window.open devolviera algo es mentir a quien tiene el
+          bloqueo de emergentes activado, que en Safari de iOS es mucha gente. */}
+      <h2 data-enviado-titulo>Listo</h2>
+      <p class="nota" data-enviado-texto>
+        Se abrió WhatsApp con tu solicitud escrita. Si no se abrió, también puedes
+        llamar al <a href={`tel:${clinica.telefono.href}`}>{clinica.telefono.display}</a>.
+      </p>
+      <p class="nota" data-enviado-reintento hidden>
+        <a data-enviado-enlace href="#" target="_blank" rel="noopener noreferrer">Abrir WhatsApp con el mensaje</a>
+        · o llama al <a href={`tel:${clinica.telefono.href}`}>{clinica.telefono.display}</a>.
+      </p>
+    </div>
+    <div class="pie">
+      <div class="acciones">
+        <button type="button" class="btn-borde" data-cancelar>Cerrar</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  // SIN IMPORTS A PROPÓSITO: ver el comentario del frontmatter.
+  (() => {
+    const dlg = document.querySelector('[data-agendar]');
+    if (!dlg) return;
+
+    // Si falta cualquiera de las tres piezas, se retira: el layout ya deja un
+    // enlace tel: gemelo y la clase `js` del <html> decide cuál se ve.
+    if (typeof HTMLDialogElement !== 'function' || !dlg.showModal || typeof Intl === 'undefined') {
+      document.documentElement.classList.remove('js');
+      return;
+    }
+
+    const numero = dlg.dataset.numero;
+    const zona = dlg.dataset.zona;
+    const plantilla = dlg.dataset.plantilla;
+    const tramos = JSON.parse(dlg.dataset.tramos);
+    const MESES_VISTA = 3;
+
+    const MES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+    // «Hoy» según la zona de la clínica, no la del visitante: alguien mirando
+    // desde España no debe ver un día distinto al de Tegucigalpa.
+    function hoyEnZona() {
+      const partes = new Intl.DateTimeFormat('en-CA', {
+        timeZone: zona, year: 'numeric', month: '2-digit', day: '2-digit',
+      }).format(new Date());
+      const [a, m, d] = partes.split('-').map(Number);
+      return { a, m: m - 1, d };
+    }
+    function minutosAhora() {
+      const h = new Intl.DateTimeFormat('en-GB', {
+        timeZone: zona, hour: '2-digit', minute: '2-digit', hour12: false,
+      }).format(new Date());
+      const [hh, mm] = h.split(':').map(Number);
+      return hh * 60 + mm;
+    }
+
+    const hoy = hoyEnZona();
+    let verA = hoy.a, verM = hoy.m;
+    let elegido = null;
+
+    const cuerpo = dlg.querySelector('[data-cal-cuerpo]');
+    const rotulo = dlg.querySelector('[data-mes-nombre]');
+    const salida = dlg.querySelector('[data-elegido]');
+    const enviar = dlg.querySelector('[data-enviar]');
+    const campoNombre = dlg.querySelector('[data-nombre]');
+
+    // Enviar exige DÍA y NOMBRE. Sin el nombre el mensaje salía como
+    // «Nombre: Sin nombre» y la clínica recibía una petición de cita que no
+    // podía atribuir a nadie: el error que este formulario existe para evitar.
+    function revisar() {
+      enviar.disabled = !elegido || !campoNombre.value.trim();
+    }
+    campoNombre.addEventListener('input', revisar);
+
+    function atiende(fecha) {
+      const dow = fecha.getDay();
+      return tramos.some((t) => t.dow.includes(dow));
+    }
+    function disponible(a, m, d) {
+      const f = new Date(a, m, d);
+      if (!atiende(f)) return false;
+      const esHoy = a === hoy.a && m === hoy.m && d === hoy.d;
+      if (a < hoy.a || (a === hoy.a && m < hoy.m) || (a === hoy.a && m === hoy.m && d < hoy.d)) return false;
+      if (esHoy) {
+        // Pasada la hora de cierre, hoy deja de ofrecerse: nadie va a contestar.
+        const t = tramos.find((x) => x.dow.includes(f.getDay()));
+        if (t && minutosAhora() >= t.cierraMin) return false;
+      }
+      // Ventana de tres meses.
+      const tope = new Date(hoy.a, hoy.m + MESES_VISTA, hoy.d);
+      if (f > tope) return false;
+      return true;
+    }
+
+    function pintar() {
+      rotulo.textContent = `${MES[verM]} ${verA}`;
+      cuerpo.innerHTML = '';
+      const primero = new Date(verA, verM, 1);
+      // Semana que empieza en lunes: getDay() da 0 para domingo.
+      const offset = (primero.getDay() + 6) % 7;
+      const dias = new Date(verA, verM + 1, 0).getDate();
+      let fila = document.createElement('tr');
+      for (let i = 0; i < offset; i++) fila.appendChild(document.createElement('td'));
+      for (let d = 1; d <= dias; d++) {
+        if (fila.children.length === 7) { cuerpo.appendChild(fila); fila = document.createElement('tr'); }
+        const td = document.createElement('td');
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = String(d);
+        const ok = disponible(verA, verM, d);
+        b.disabled = !ok;
+        if (hoy.a === verA && hoy.m === verM && hoy.d === d) b.classList.add('hoy');
+        if (elegido && elegido.a === verA && elegido.m === verM && elegido.d === d) b.classList.add('sel');
+        b.addEventListener('click', () => {
+          elegido = { a: verA, m: verM, d };
+          salida.textContent = `Día elegido: ${d} de ${MES[verM]} de ${verA}.`;
+          revisar();
+          pintar();
+        });
+        td.appendChild(b);
+        fila.appendChild(td);
+      }
+      while (fila.children.length < 7) fila.appendChild(document.createElement('td'));
+      cuerpo.appendChild(fila);
+    }
+
+    dlg.querySelectorAll('[data-mes]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const paso = Number(b.dataset.mes);
+        const f = new Date(verA, verM + paso, 1);
+        verA = f.getFullYear(); verM = f.getMonth();
+        // Cambiar de mes invalida la selección: si no, se envía un día que ya
+        // no se ve y el visitante no sabe qué pidió.
+        elegido = null;
+        salida.textContent = 'Ningún día elegido todavía.';
+        revisar();
+        pintar();
+      });
+    });
+
+    enviar.addEventListener('click', () => {
+      const nombre = campoNombre.value.trim();
+      if (!elegido || !nombre) return;
+      const servicio = dlg.querySelector('[data-servicio]').value;
+      const dia = `${elegido.d} de ${MES[elegido.m]} de ${elegido.a}`;
+      const mensaje = plantilla
+        .replace('{nombre}', nombre)
+        .replace('{servicio}', servicio)
+        .replace('{dia}', dia);
+      const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+
+      // window.open devuelve null si el navegador bloqueó la emergente, y de ahí
+      // sale el aviso de respaldo: antes la interfaz cantaba «Se abrió WhatsApp»
+      // igualmente y dejaba al visitante creyendo que había pedido su cita.
+      //
+      // PERO CON `noopener` EN LAS OPCIONES DEVUELVE null SIEMPRE, aunque la
+      // ventana se haya abierto perfectamente — lo dice la especificación: si
+      // noopener está puesto, se corta la relación con la ventana madre y el
+      // retorno es null. Durante un tiempo esta comprobación estuvo invertida
+      // en la práctica: WhatsApp abría con el mensaje ya escrito y el diálogo
+      // decía «No se pudo abrir WhatsApp». El respaldo saltaba SIEMPRE, justo
+      // en el momento en que el visitante acababa de pedir su cita.
+      //
+      // Se abre primero en blanco —eso sí devuelve la ventana—, se corta el
+      // opener a mano para que wa.me no pueda navegar esta pestaña, y solo
+      // entonces se carga la url. Se conservan las dos cosas: saber de verdad
+      // si el navegador bloqueó la emergente, y no filtrar el opener.
+      let abierta = null;
+      try {
+        abierta = window.open('', '_blank');
+        if (abierta) {
+          abierta.opener = null;
+          abierta.location = url;
+        }
+      } catch (e) {
+        abierta = null;
+      }
+      const ok = !!abierta;
+
+      dlg.querySelector('[data-enviado-titulo]').textContent = ok ? 'Listo' : 'No se pudo abrir WhatsApp';
+      dlg.querySelector('[data-enviado-texto]').hidden = !ok;
+      const reintento = dlg.querySelector('[data-enviado-reintento]');
+      reintento.hidden = ok;
+      if (!ok) dlg.querySelector('[data-enviado-enlace]').href = url;
+
+      dlg.querySelector('[data-paso="formulario"]').hidden = true;
+      dlg.querySelector('[data-paso="enviado"]').hidden = false;
+    });
+
+    // Intro en el nombre envía. Los campos viven FUERA del <form method="dialog">
+    // —que solo envuelve el botón de cerrar— así que sin esto no había ningún
+    // camino de envío por teclado en toda la ventana.
+    campoNombre.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); if (!enviar.disabled) enviar.click(); }
+    });
+
+    // Cierre al pulsar el velo. <dialog> nativo no lo trae y en 2026 se espera:
+    // el elemento ocupa toda la ventana, así que un clic fuera de su caja es un
+    // clic en el propio <dialog>.
+    dlg.addEventListener('click', (e) => {
+      if (e.target !== dlg) return;
+      const c = dlg.getBoundingClientRect();
+      const fuera = e.clientX < c.left || e.clientX > c.right || e.clientY < c.top || e.clientY > c.bottom;
+      if (fuera) dlg.close();
+    });
+
+    dlg.querySelectorAll('[data-cancelar]').forEach((b) => b.addEventListener('click', () => dlg.close()));
+
+    function abrir() {
+      dlg.querySelector('[data-paso="formulario"]').hidden = false;
+      dlg.querySelector('[data-paso="enviado"]').hidden = true;
+      revisar();
+      pintar();
+      dlg.showModal();
+      // Se enfoca el propio diálogo (lleva tabindex="-1"), no el primer
+      // enfocable: así un lector de pantalla anuncia el título en vez de
+      // «Cerrar». Y no se enfoca el campo de nombre a propósito, para no abrir
+      // el teclado del móvil encima del calendario.
+      dlg.focus();
+    }
+
+    document.querySelectorAll('[data-abrir-cita]').forEach((b) => b.addEventListener('click', abrir));
+  })();
+</script>
+
+<style>
+  /* dvh y no vh: en un móvil la barra del navegador entra y sale, y con vh el
+     diálogo se pasa de alto justo cuando la barra está visible. */
+  .dialogo {
+    position: relative;
+    border: 0;
+    border-radius: var(--radius);
+    padding: 0;
+    max-width: 32rem;
+    width: calc(100vw - var(--s-4));
+    max-height: 90dvh;
+    background: var(--base);
+    color: var(--ink);
+    box-shadow: var(--sombra-dialogo);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  /* IMPRESCINDIBLE. `display:flex` de autor gana al `dialog:not([open])
+     {display:none}` de la hoja del navegador, así que el diálogo se pintaba
+     ABIERTO al final de las seis páginas. El mismo error que con [hidden] diez
+     líneas más abajo: en cuanto se le pone display a un elemento que el
+     navegador oculta por estado, hay que devolver la ocultación a mano.
+     Compilaba y verificaba en verde; se ve mirando la captura. */
+  .dialogo:not([open]) { display: none }
+  .dialogo::backdrop { background: var(--velo-dialogo) }
+
+  .paso { display: flex; flex-direction: column; min-height: 0; flex: 1 }
+  /* OBLIGATORIO junto a la regla de arriba. `display:flex` de autor gana al
+     `[hidden]{display:none}` de la hoja del navegador pase lo que pase con la
+     especificidad, así que el paso «enviado» seguía ocupando media ventana y
+     empujaba el botón de enviar al centro. Se ve mirando, no compilando. */
+  .paso[hidden] { display: none }
+  .cuerpo { flex: 1; min-height: 0; overflow-y: auto; padding: var(--s-4) }
+  .pie {
+    flex: none;
+    padding: var(--s-2) var(--s-4) var(--s-3);
+    border-top: 1px solid var(--line);
+    background: var(--base);
+  }
+
+  /* Fuera del flujo, en la esquina: dentro de un contenedor flex el float se
+     ignora y la X se convertía en una fila entera. Al no estar en .cuerpo
+     tampoco se desplaza: la salida está siempre donde el visitante la dejó. */
+  .cerrar-forma { position: absolute; top: var(--s-1); right: var(--s-1); margin: 0; z-index: 1 }
+  .cerrar {
+    background: transparent; border: 0; cursor: pointer;
+    font-size: 1.75rem; line-height: 1; color: var(--ink-faint);
+    width: 2.75rem; height: 2.75rem;
+  }
+  .cerrar:hover { color: var(--ink) }
+
+  /* El titular va en tinta y en negrita. El oro se queda abajo, en los rótulos
+     de los campos, que es el papel que el sistema ya le tiene dado.
+
+     La negrita es REAL, no sintetizada: fuentes.css declara Tinos 700
+     (tinos-latin-700-normal.woff2) además del 400, y en Windows y Mac el primer
+     nombre de la pila es Times New Roman, que trae su propia negrita. Un 700
+     falso sobre una serif se nota enseguida — engorda el trazo sin cambiar la
+     forma— y aquí no hace falta pasar por eso.
+
+     Rompe a propósito la regla global `h1,h2,h3 { font-weight: var(--peso-titulo) }`
+     de tokens.css: ahí el 400 existe porque Times no tiene Light y el titular
+     de página se sostiene por tamaño. Este titular vive dentro de un diálogo
+     pequeño, donde el tamaño no puede crecer y el peso es lo único que queda. */
+  .dialogo h2 {
+    font-size: var(--step-3);
+    margin-bottom: var(--s-1);
+    padding-right: 2rem;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .nota { font-size: var(--step--1); color: var(--ink-soft); margin-bottom: var(--s-3) }
+  .pista { display: block; font-family: var(--font-datos); font-size: var(--step--2); color: var(--ink-faint) }
+
+  .campo { display: grid; gap: 6px; margin-bottom: var(--s-3) }
+  .campo > span, .et {
+    font-family: var(--font-datos); font-size: var(--step--1);
+    font-weight: 500; color: var(--text-seccion);
+  }
+  input, select {
+    font-family: var(--font-datos); font-size: var(--step-0);
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--base); color: var(--ink); width: 100%;
+  }
+  input:focus-visible, select:focus-visible { outline: 2px solid var(--marca-text); outline-offset: 1px }
+
+  .cal { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s-2) }
+  .cal-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s-1) }
+  .cal-cab strong { font-family: var(--font-datos); font-size: var(--step--1); font-weight: 500 }
+  .cal-cab button {
+    background: transparent; border: 1px solid var(--line); border-radius: var(--radius);
+    cursor: pointer; font-size: 1.125rem; line-height: 1; color: var(--ink);
+    width: 2rem; height: 2rem;
+  }
+  .cal table { width: 100%; border-collapse: collapse }
+  .cal th {
+    font-family: var(--font-datos); font-size: var(--step--2); font-weight: 500;
+    color: var(--ink-faint); padding-bottom: 4px;
+  }
+  .cal td { padding: 1px; text-align: center }
+
+  /* El script crea las celdas Y los botones con createElement, así que NINGUNO
+     recibe el atributo de encapsulado de Astro. El :global tiene que empezar en
+     el último elemento que SÍ está en la plantilla — aquí <table> — porque
+     '.cal td :global(button)' compilaria a 'td[data-astro-cid-X] button' y ese td
+     no existe: la regla no aplica y salen botones con el estilo por defecto del
+     navegador (2px outset negro), que es justo lo que pasó. */
+  .cal table :global(td button) {
+    /* 44 px: el objetivo táctil recomendado. El calendario es lo que de verdad
+       se toca con el pulgar en móvil, y a 36 px se falla de celda. Caben: el
+       diálogo da 448 px útiles entre 7 columnas, o sea 64 px por celda. */
+    width: 100%; min-height: 2.75rem;
+    font-family: var(--font-datos); font-size: var(--step--1);
+    background: transparent; border: 1px solid transparent; border-radius: var(--radius);
+    color: var(--ink); cursor: pointer;
+  }
+  .cal table :global(td button:hover:not(:disabled)) { border-color: var(--marca-text) }
+  /* El día de hoy se marca con un punto, no con color: el color ya significa
+     «elegido», y dos significados en un canal no se distinguen. */
+  .cal table :global(td button.hoy) { font-weight: 500; position: relative }
+  .cal table :global(td button.hoy)::after {
+    content: ''; position: absolute; left: 50%; bottom: 4px;
+    width: 3px; height: 3px; border-radius: 50%; background: var(--marca-text);
+    transform: translateX(-50%);
+  }
+  .cal table :global(td button.sel) { background: var(--ink); color: var(--base); border-color: var(--ink) }
+  /* Exento de WCAG 1.4.3: el bajo contraste ES la señal de que no se puede usar. */
+  .cal table :global(td button:disabled) { color: var(--desactivado); cursor: not-allowed }
+
+  .elegido { font-family: var(--font-datos); font-size: var(--step--1); color: var(--ink-soft); margin: 0 0 var(--s-2) }
+
+  .acciones { display: flex; gap: var(--s-1); flex-wrap: wrap }
+  .btn-wa, .btn-borde {
+    font-family: var(--font-datos); font-size: var(--step--1); font-weight: 500;
+    padding: 0.75rem 1.25rem; border-radius: var(--radius);
+    border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-wa { background: var(--whatsapp); color: var(--ink); border-color: var(--whatsapp) }
+  .btn-wa:hover:not(:disabled) { background: var(--whatsapp-oscuro); border-color: var(--whatsapp-oscuro) }
+  .btn-wa:disabled { background: var(--surface); color: var(--desactivado); border-color: var(--line); cursor: not-allowed }
+  /* Remarco en AZUL DE MARCA, no en --line. --line es el token de los bordes
+     de 1 px entre superficies: sobre blanco da 1.27:1 y para separar dos zonas
+     sobra, pero para dibujar un CONTROL desaparece — el boton de Cancelar se
+     leia como una etiqueta suelta. --marca-text da 5.70:1 sobre blanco, muy por
+     encima del 3:1 que WCAG 1.4.11 pide para el contorno de un control.
+     El texto sigue en --ink: el azul dibuja el boton, no lo escribe. */
+  .btn-borde { background: transparent; color: var(--ink); border-color: var(--marca-text) }
+  .btn-borde:hover { border-color: var(--ink); background: var(--marca-tenue) }
+</style>

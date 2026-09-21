@@ -1,0 +1,107 @@
+---
+// Subir al inicio.
+//
+// Vivia dentro de index.astro, asi que solo existia en la portada: en las
+// paginas de especialidad, que son las mas largas del sitio —ficha, listado de
+// procedimientos, pasos, columna lateral y cierre—, no habia forma de volver
+// arriba que no fuese arrastrar. Ahora lo pone el layout y esta en las quince.
+//
+// Se apila sobre el icono de WhatsApp, que es el que manda y no se mueve.
+---
+
+<button type="button" class="tope" data-tope aria-label="Subir al inicio" title="Subir al inicio">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+    <path
+      d="M12 5.6 5.3 12.3a1 1 0 1 0 1.4 1.4l4.3-4.3V19a1 1 0 1 0 2 0V9.4l4.3 4.3a1 1 0 0 0 1.4-1.4L12 5.6Z"
+    ></path>
+  </svg>
+</button>
+
+<style>
+  /* 1,25rem de margen + 3,5rem del icono de WhatsApp + 0,75rem de aire.
+     Sin JavaScript no aparece nunca, y por eso el estado oculto vive en el CSS
+     y no al reves que en las apariciones al desplazar. */
+  .tope {
+    position: fixed;
+    right: calc(1.25rem + env(safe-area-inset-right, 0px));
+    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    z-index: 90;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--base);
+    /* SIN borde. §4: manda el borde o manda la sombra, nunca los dos —borde
+       nítido más sombra difusa a la vez da la «tarjeta fantasma»— y esto es lo
+       único junto al diálogo que flota de verdad, así que le toca sombra. */
+    border: 0;
+    color: var(--ink);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      visibility 0.25s;
+    box-shadow: var(--sombra-flotante);
+  }
+  .tope[data-visible] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .tope:hover {
+    background: var(--surface);
+  }
+  .tope:active {
+    transform: translateY(1px);
+  }
+  @media (max-width: 24rem) {
+    .tope {
+      bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+      right: calc(1rem + env(safe-area-inset-right, 0px));
+    }
+  }
+  @media print {
+    .tope {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // Sin imports, para que Astro lo siga incrustando en el HTML: el sitio tiene
+  // que abrir desde file://. Ver la nota de astro.config.mjs.
+  const tope = document.querySelector<HTMLButtonElement>('[data-tope]');
+
+  if (tope) {
+    // No aparece hasta pasados 400 px: en la primera pantalla no hay nada a lo
+    // que volver, y un boton flotante que sale de inmediato solo estorba.
+    //
+    // Ademas se esconde en paginas que no dan para desplazarse. 404.html cabe
+    // entera en pantalla: alli el boton no llegaria a aparecer nunca, pero mas
+    // vale no tener que confiar en que el umbral lo impida.
+    const pintar = () => {
+      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      const haySitio = document.documentElement.scrollHeight > window.innerHeight + 400;
+      if (y > 400 && haySitio) tope.dataset.visible = '';
+      else delete tope.dataset.visible;
+    };
+    window.addEventListener('scroll', pintar, { passive: true });
+    window.addEventListener('resize', pintar, { passive: true });
+    pintar();
+
+    tope.addEventListener('click', () => {
+      const suave = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: suave ? 'smooth' : 'auto' });
+      // El foco vuelve al principio del documento. Sin esto, quien navega con
+      // teclado sube la pagina pero deja el foco en un boton que acaba de
+      // desaparecer, y el siguiente tabulador continua desde el pie.
+      const saltar = document.querySelector<HTMLElement>('.saltar');
+      saltar?.focus({ preventScroll: true });
+    });
+  }
+</script>

@@ -1,0 +1,75 @@
+---
+import fotos from '../data/fotos.json';
+
+// Icono de especialidad, recortado de la lamina de linea generada con IA.
+//
+// POR QUE ES UNA <img> Y NO UN SVG COMO Icono.astro
+//
+// Viene de un mapa de bits, asi que NO HEREDA EL COLOR. Los SVG de
+// `Icono.astro` usan `currentColor` y se tinen con --marca-text alli donde se
+// pongan; estos traen el color dentro, aplicado al generarlos. Si cambia la
+// paleta, hay que volver a correr `node scripts/iconos-simbolos.mjs`, no basta
+// con tocar un token.
+//
+// EL COLOR NO ES EL DE LA LAMINA. El original es trazo celeste sobre azul
+// marino; sobre el blanco de la pagina eso daria 2.2:1, que es exactamente el
+// error que DESIGN.md prohibe —el azul claro rellena, nunca escribe—. El
+// script convierte el brillo en alfa y tine el trazo con --marca-text, 5.70:1.
+//
+// TAMANO. El dibujo util mide 208px en la lamina, asi que la pieza @2x de
+// 144px ya va justa: por encima de ~72px de presentacion se empieza a ver el
+// origen. Y por debajo de 24 el trazo se cierra sobre si mismo y el icono se
+// vuelve una mancha, asi que ese es el suelo.
+//
+// Ruta SIN barra inicial: con barra, bajo file:// el navegador la busca en la
+// raiz del disco y no la encuentra.
+
+interface Props {
+  /** id del recorte en public/img/ico */
+  nombre: string;
+  /** lado en px */
+  tamano?: number;
+  /** texto alternativo; vacio si el titular de al lado ya lo nombra */
+  alt?: string;
+}
+const { nombre, tamano = 36, alt = '' } = Astro.props;
+
+if (tamano < 24 || tamano > 72) {
+  throw new Error(
+    `IconoEsp "${nombre}" a ${tamano}px. El rango util es 24-72: por debajo el ` +
+    'trazo se cierra y por encima se ve el origen de la lamina.'
+  );
+}
+
+// La procedencia vive en fotos.json como la de cualquier otra imagen. Si
+// alguien borra esa entrada, el sitio deja de construir en vez de publicar una
+// imagen de IA sin rastro de donde salio.
+const lamina = fotos.find((f) => f.id === 'simbolos-lamina');
+if (!lamina) {
+  throw new Error(
+    'Falta la entrada "simbolos-lamina" en src/data/fotos.json. Estos iconos ' +
+    'son de IA y su procedencia no puede quedar sin registrar.'
+  );
+}
+if (!(lamina.recortes || []).includes(nombre)) {
+  throw new Error(
+    `El recorte "${nombre}" no esta declarado en fotos.json -> simbolos-lamina.recortes. ` +
+    'Cada icono publicado tiene que constar en la procedencia de su lamina.'
+  );
+}
+---
+
+<img
+  class="icono-esp"
+  src={`img/ico/${nombre}.webp`}
+  srcset={`img/ico/${nombre}.webp 1x, img/ico/${nombre}@2x.webp 2x`}
+  width={tamano}
+  height={tamano}
+  alt={alt}
+  loading="lazy"
+  decoding="async"
+/>
+
+<style>
+  .icono-esp { display: block; flex: none }
+</style>

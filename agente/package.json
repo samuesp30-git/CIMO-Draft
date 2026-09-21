@@ -1,0 +1,14 @@
+{
+  "name": "cimo-agente",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Asistente de CIMO. Proyecto Vercel aparte del sitio, a proposito: el sitio se despliega ya compilado y tiene que abrir desde file://.",
+  "scripts": {
+    "probar": "node probar.mjs",
+    "evaluar": "node evaluar.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.127.0"
+  }
+}

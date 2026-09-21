@@ -1,0 +1,148 @@
+---
+import fotos from '../data/fotos.json';
+import clinica from '../data/clinica.json';
+import Titular from './Titular.astro';
+import CitaCTA from './CitaCTA.astro';
+import Boton from './Boton.astro';
+
+// Portada a sangre: la foto ocupa la pantalla al abrir.
+//
+// EL PROBLEMA DE CONTRASTE, Y COMO SE RESUELVE
+//
+// Una fotografía no tiene color computado que auditar: cada píxel es distinto y
+// el peor caso es un píxel blanco justo debajo de una letra blanca. Es el mismo
+// agujero que los degradados (DESIGN.md §4b) pero peor, porque aquí ni siquiera
+// hay dos paradas conocidas entre las que interpolar.
+//
+// La regla que se aplica: EL TEXTO NUNCA TOCA LA FOTO. Va sobre un velo de
+// --ink-oscuro con alfa conocido, y el alfa mínimo bajo el texto está calculado
+// para el peor caso posible. Con la foto en blanco puro debajo:
+//
+//     alfa .72  ->  5.40:1     alfa .80  ->  6.92:1
+//
+// El texto vive donde el velo va de .94 a .80, así que aunque la foto fuera un
+// rectángulo blanco el contraste sigue pasando AA. No es una estimación: sale
+// de componer rgb(24,32,37) sobre blanco y medir la luminancia resultante.
+//
+// EL ORO NO ENTRA AQUI. --oro-sobre-oscuro da 4.75:1 contra el --ink sólido,
+// pero sobre el velo cae a 3.47:1 en el peor caso y no llega. Por eso esta
+// portada NO lleva rótulo de sección: no es una omisión de diseño, es que el
+// único color que podría escribirlo no aguanta el fondo.
+//
+// Y la sección lleva --ink-oscuro como background-color aparte de la imagen: si
+// el .webp no carga, el texto cae sobre tinta sólida en vez de sobre blanco.
+
+interface Props {
+  /** id de src/data/fotos.json */
+  foto?: string;
+}
+const { foto = 'portada-cielo' } = Astro.props;
+
+const f = fotos.find((x) => x.id === foto);
+if (!f) throw new Error(`Foto desconocida: "${foto}". Las que hay: ${fotos.map((x) => x.id).join(', ')}`);
+---
+
+<section class="portada-foto">
+  {/* Rutas SIN barra inicial: con barra el navegador las busca en la raíz del
+      disco y bajo file:// no las encuentra. */}
+  {/* Tres piezas, y el orden importa: el navegador se queda con la PRIMERA
+      <source> que case, así que la más específica va arriba.
+
+      La vertical no es la misma foto reescalada: es un recorte 4:5 distinto,
+      encuadrado por `attention` sobre la zona de más interés de la imagen. Sin
+      ella, en una pantalla de 390x1200 `cover` amplía tanto que lo único que
+      queda en cuadro es un hombro — comprobado, no supuesto. */}
+  <picture>
+    <source media="(orientation: portrait) and (max-width: 48rem)" srcset={`img/${f.id}-alto.webp`} width="800" height="1150" />
+    <source media="(max-width: 64rem)" srcset={`img/${f.id}-sm.webp`} width="900" height="620" />
+    <img src={`img/${f.id}.webp`} alt={f.alt} width="1600" height="900" fetchpriority="high" decoding="async" />
+  </picture>
+
+  <div class="velo" aria-hidden="true"></div>
+
+  <div class="contenedor dentro">
+    <div class="texto">
+      <Titular nivel={1} resalte="la familia" sobreOscuro class="revelable">Odontología para toda</Titular>
+      <p class="entradilla entrada entrada-1">{clinica.presentacion[0]}</p>
+      <div class="acciones entrada entrada-2">
+        <CitaCTA tamano="lg" variante="claro" />
+        <Boton variante="contorno-claro" tamano="lg" href="servicios.html">Ver servicios →</Boton>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .portada-foto {
+    position: relative;
+    isolation: isolate;
+    /* Tinta sólida DEBAJO de la imagen: si el .webp no carga, el texto blanco
+       cae sobre 16.51:1 en vez de sobre el blanco del papel. */
+    background-color: var(--ink-oscuro);
+    /* Llena la pantalla al abrir, descontando la barra de estado y la cabecera.
+       svh y no vh: en móvil, vh cuenta la barra del navegador como si no
+       existiera y la portada queda cortada por abajo. */
+    min-height: max(30rem, calc(100svh - var(--cabecera-alto) - 1.9rem));
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  picture, .velo { position: absolute; inset: 0; z-index: -1 }
+  img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  /* El velo es lo que hace auditable la portada. Las paradas no son estéticas:
+     bajo el texto nunca baja de .80. */
+  .velo {
+    background: linear-gradient(
+      100deg,
+      rgba(24, 32, 37, 0.94) 0%,
+      rgba(24, 32, 37, 0.88) 30%,
+      rgba(24, 32, 37, 0.80) 48%,
+      rgba(24, 32, 37, 0.52) 74%,
+      rgba(24, 32, 37, 0.34) 100%
+    );
+  }
+
+  .dentro { width: 100%; padding-block: var(--s-5) }
+  /* El texto se queda en la mitad oscura. Si creciera más allá, saldría del
+     tramo donde el velo está calculado. */
+  .texto { max-width: 34rem; display: grid; gap: var(--s-3) }
+
+  .entradilla {
+    font-size: var(--step-1);
+    color: #E8EEF1;          /* 12.4:1 contra el velo en su punto más claro bajo el texto */
+    max-width: 30rem;
+  }
+  .acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) }
+
+  /* En vertical el degradado lateral no sirve: el texto ocupa el ancho entero y
+     la mitad clara le pasaría por debajo. Se cambia por uno de arriba abajo,
+     más cerrado, y el encuadre sube para que la cara no quede tapada. */
+  @media (max-width: 48rem) {
+    .velo {
+      background: linear-gradient(
+        180deg,
+        rgba(24, 32, 37, 0.62) 0%,
+        rgba(24, 32, 37, 0.86) 42%,
+        rgba(24, 32, 37, 0.94) 100%
+      );
+    }
+    /* EN MOVIL LA PORTADA NO OCUPA LA PANTALLA ENTERA, y no es una concesion:
+       a 390x750, `cover` sobre el recorte vertical vuelve a ampliar hasta
+       dejar un macro borroso sin motivo reconocible. A 34rem la caja tiene
+       casi el mismo aspecto que el recorte (0.72 contra 0.70), asi que la foto
+       entra practicamente sin recortar — y de paso asoma la seccion siguiente,
+       que le dice al visitante que hay mas abajo. */
+    .portada-foto {
+      align-items: flex-end;
+      min-height: min(34rem, calc(100svh - var(--cabecera-alto) - 1.9rem));
+    }
+    .dentro { padding-block: var(--s-5) var(--s-4) }
+  }
+</style>

@@ -1,0 +1,145 @@
+---
+import Wordmark from './Wordmark.astro';
+import clinica from '../data/clinica.json';
+import { comoRango } from '../lib/horarios';
+import { enlaceWhatsApp } from '../lib/whatsapp';
+
+// Pie. Lleva la dirección en compacto y el horario completo.
+//
+// La dirección aparece en tres sitios del sitio (pie, contacto y el diálogo de
+// cita). Para que no se contradigan, las tres leen clinica.sedes[0] y ninguna
+// la escribe a mano. El sitio hermano ya chocó con esto: el pie decía una hora
+// y la página de preguntas otra.
+
+const sede = clinica.sedes[0];
+const { direccion, horarios, cerrado } = sede;
+const anio = new Date().getFullYear();
+const wa = enlaceWhatsApp(clinica.whatsapp.numero, clinica.whatsapp.plantillas.general);
+---
+
+<footer class="pie">
+  <div class="dentro">
+    <div class="col marca">
+      <Wordmark tamano={28} conBajada sobreOscuro />
+      <p class="lema">{clinica.lema}</p>
+    </div>
+
+    <div class="col">
+      {/* <p>, no <h2>. Eran encabezados de nivel 2 a 13 px, o sea el MISMO nivel
+          de esquema que «Horarios y dirección» o el titular de cualquier
+          sección: quien navega por encabezados con un lector de pantalla
+          recibía las etiquetas del pie revueltas con las secciones reales de la
+          página. Al pie se llega por su landmark <footer>, no saltando
+          encabezados. */}
+      <p class="rot">Dónde</p>
+      <address>
+        {direccion.calle}<br />
+        {direccion.edificio}, {direccion.detalle}<br />
+        <span class="tenue">{direccion.referencia}</span><br />
+        {direccion.ciudad}, {direccion.pais}
+      </address>
+      {sede.direccionPendiente && (
+        <p class="aviso" data-direccion-pendiente>
+          En mayo de 2026 la clínica anunció un cambio de local. Confirma la
+          dirección por WhatsApp antes de visitarnos.
+        </p>
+      )}
+    </div>
+
+    <div class="col">
+      <p class="rot">Horario</p>
+      <ul class="horario">
+        {horarios.map((t) => (
+          <li><span>{t.dias}</span><strong>{comoRango(t)}</strong></li>
+        ))}
+        {cerrado?.map((t) => (
+          <li><span>{t.dias}</span><strong class="cerrado">Cerrado</strong></li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="col">
+      <p class="rot">Contacto</p>
+      <ul class="contacto">
+        {/* WhatsApp, no tel:. Es el mismo número y es por donde la clínica
+            atiende de verdad; listarlo dos veces solo lo hacía parecer dos. */}
+        <li><a href={wa} target="_blank" rel="noopener noreferrer" data-wa-contacto>WhatsApp {clinica.whatsapp.display}</a></li>
+        <li><a href={`mailto:${clinica.email}`}>{clinica.email}</a></li>
+        <li><a href={clinica.redes.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></li>
+        <li><a href={clinica.redes.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="legal">© {anio} {clinica.nombreCompleto}</p>
+</footer>
+
+<style>
+  /* Mismo degradado que la franja: cuando van seguidas se leen como un solo
+     bloque de tinta, que es lo que son. Sin trama de puntos aquí — el pie es
+     denso en texto y la retícula empieza a competir. */
+  .pie {
+    background-color: var(--ink);
+    background-image: var(--degradado-oscuro);
+    color: var(--sobre-oscuro);
+    margin-top: var(--s-6);
+  }
+  .dentro {
+    max-width: var(--container);
+    margin-inline: auto;
+    padding: var(--s-5) var(--s-3) var(--s-4);
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  }
+  .col { display: grid; gap: var(--s-1); align-content: start }
+  .lema { color: var(--sobre-oscuro-suave); font-size: var(--step--1); max-width: 28ch }
+
+  .rot {
+    font-family: var(--font-datos);
+    font-size: var(--step--2);
+    font-weight: 500;
+    letter-spacing: var(--track-versalita);
+    text-transform: uppercase;
+    color: var(--text-seccion-oscuro);
+    margin: 0 0 var(--s-1);
+  }
+
+  address { font-style: normal; font-size: var(--step--1); line-height: 1.7 }
+  .tenue { color: var(--sobre-oscuro-suave) }
+
+  .aviso {
+    margin-top: var(--s-1);
+    font-size: var(--step--2);
+    color: var(--sobre-oscuro-suave);
+    /* Sin barra de color al costado: ver la nota de Ubicacion.astro. */
+    padding-left: 0;
+    max-width: 34ch;
+  }
+
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
+  .horario li { display: flex; justify-content: space-between; gap: var(--s-2); max-width: 17rem }
+  .horario span, .contacto a { font-family: var(--font-datos); font-size: var(--step--1) }
+  .horario strong { font-family: var(--font-datos); font-size: var(--step--1); font-weight: 500; color: var(--base) }
+  .cerrado { color: var(--sobre-oscuro-suave) !important; font-weight: 400 !important }
+
+  .contacto a { color: var(--sobre-oscuro); border-bottom-color: rgba(171, 194, 205, .35) }
+  .contacto a:hover { color: var(--base); border-bottom-color: var(--base) }
+
+  .legal {
+    max-width: var(--container);
+    margin-inline: auto;
+    padding: var(--s-2) var(--s-3) var(--s-4);
+    border-top: 1px solid rgba(171, 194, 205, .18);
+    font-family: var(--font-datos);
+    font-size: var(--step--2);
+    color: var(--sobre-oscuro-suave);
+  }
+
+  @media (max-width: 60rem) {
+    .dentro { grid-template-columns: repeat(2, 1fr) }
+  }
+  @media (max-width: 34rem) {
+    .dentro { grid-template-columns: 1fr }
+  }
+</style>

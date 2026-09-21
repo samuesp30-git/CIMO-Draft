@@ -1,0 +1,52 @@
+[
+  {
+    "slug": "ortodoncia-invisible",
+    "nombre": "Ortodoncia invisible",
+    "resumen": "Alineadores Invisalign planificados con escáner iTero 5D Plus.",
+    "descripcion": "Alineadores transparentes y removibles para corregir la posición de los dientes sin brackets ni alambres. En CIMO se planifican con el escáner iTero 5D Plus, que permite ver una simulación de cómo podría quedar la sonrisa antes de empezar.",
+    "destacado": true,
+    "pagina": "invisalign.html",
+    "fuente": "Publicaciones del 24 jul, 18 ago y 1 sep de 2026, y el anuncio del escáner del 9 jul de 2026.",
+    "iconoEsp": "invisible"
+  },
+  {
+    "slug": "brackets",
+    "nombre": "Brackets",
+    "resumen": "Ortodoncia convencional.",
+    "icono": "brackets",
+    "descripcion": "Ortodoncia con brackets fijos. Es la alternativa a los alineadores cuando el caso lo pide o cuando se prefiere el tratamiento convencional.",
+    "destacado": false,
+    "fuente": "Publicaciones del 18 ago y 1 sep de 2026, que contrastan brackets y alineadores.",
+    "iconoEsp": "brackets"
+  },
+  {
+    "slug": "higiene",
+    "nombre": "Higiene y prevención",
+    "resumen": "Limpieza dental y cuidado preventivo.",
+    "icono": "escudo",
+    "descripcion": "Limpieza dental y orientación sobre técnica de cepillado e higiene diaria, que es lo que sostiene cualquier tratamiento a largo plazo.",
+    "destacado": false,
+    "fuente": "Publicación del 20 may de 2026 sobre técnica de cepillado.",
+    "iconoEsp": "higiene"
+  },
+  {
+    "slug": "odontopediatria",
+    "nombre": "Odontopediatría",
+    "resumen": "Atención dental para niños.",
+    "icono": "dientes",
+    "descripcion": "Atención dental infantil, con el trato y el ritmo que un paciente pequeño necesita para que la visita al dentista no se le haga cuesta arriba.",
+    "destacado": false,
+    "fuente": "Publicación del 11 jun de 2026 con un paciente pequeño.",
+    "iconoEsp": "ninos"
+  },
+  {
+    "slug": "rehabilitacion-estetica",
+    "nombre": "Rehabilitación estética",
+    "resumen": "Recuperar función y forma de la sonrisa.",
+    "icono": "brillo",
+    "descripcion": "Tratamientos para devolver a la dentadura su función y su aspecto cuando hay piezas dañadas, desgastadas o ausentes.",
+    "destacado": false,
+    "fuente": "Publicación del 9 may de 2026, caso completo documentado.",
+    "iconoEsp": "estetica"
+  }
+]

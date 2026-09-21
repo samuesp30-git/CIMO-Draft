@@ -1,0 +1,98 @@
+[
+  {
+    "id": "direccion",
+    "titulo": "Confirmar la dirección tras la mudanza",
+    "detalle": "En mayo de 2026 anunciaron mudanza sin decir a dónde. Es lo más urgente: el trabajo principal del sitio es que la gente llegue a la clínica. MIENTRAS TANTO el mapa sí existe, pero consultando a Google por la dirección publicada en vez de por coordenadas, y con el aviso de mudanza al lado. Al confirmarse el local se rellena `coordenadas` en clinica.json y el mapa pasa solo al punto exacto.",
+    "bloquea": [
+      "punto exacto del mapa",
+      "datos estructurados",
+      "aviso de mudanza en inicio y contacto"
+    ],
+    "marcador": false
+  },
+  {
+    "id": "logo-vector",
+    "titulo": "Logo vectorial",
+    "detalle": "El cliente entregó un logo de 1148 x 1148 px, del que se extrajo el símbolo (274 x 274) que usa la cabecera. Sigue faltando el VECTORIAL: por encima de ~137 px de lado la imagen se empieza a ver. El wordmark no depende de esto: se compone en tipo con las cifras medidas del propio logo.",
+    "bloquea": [
+      "símbolo por encima de 137 px",
+      "imagen de compartir 1200x630"
+    ],
+    "marcador": false
+  },
+  {
+    "id": "fotografia",
+    "titulo": "Fotografía propia de la clínica y del equipo",
+    "detalle": "No se generan imágenes ni se usan bancos: una clínica que enseña un consultorio que no es el suyo está mintiendo sobre lo que el paciente va a encontrar.",
+    "bloquea": [
+      "portada",
+      "página de servicios",
+      "contacto"
+    ],
+    "marcador": true,
+    "texto": "Fotografía de la clínica pendiente del cliente"
+  },
+  {
+    "id": "especialistas",
+    "titulo": "Nómina de especialistas",
+    "detalle": "Solo consta públicamente la Dra. Marta Muñoz. Hace falta nombre, especialidad, número de colegiado y foto de cada uno.",
+    "bloquea": [
+      "sección de especialistas — no construida"
+    ],
+    "marcador": false
+  },
+  {
+    "id": "casos",
+    "titulo": "Consentimiento por escrito para los casos antes/después",
+    "detalle": "Hay casos documentados en su Instagram, pero publicarlos en un sitio propio necesita consentimiento explícito del paciente.",
+    "bloquea": [
+      "sección de casos — no construida"
+    ],
+    "marcador": false
+  },
+  {
+    "id": "brazo-medico",
+    "titulo": "¿Existe el componente médico?",
+    "detalle": "El nombre dice «Médico Odontológico» pero todo el contenido público es odontológico. La respuesta cambia la arquitectura del sitio.",
+    "bloquea": [
+      "arquitectura",
+      "datos estructurados"
+    ],
+    "marcador": false
+  },
+  {
+    "id": "precios",
+    "titulo": "Precios o política de financiamiento, y seguros aceptados",
+    "detalle": "Los testimonios mencionan «precios justos», pero no hay ninguna cifra publicada.",
+    "bloquea": [
+      "preguntas frecuentes"
+    ],
+    "marcador": false
+  },
+  {
+    "id": "presentacion",
+    "titulo": "Texto completo de la presentacion",
+    "detalle": "La primera frase de clinica.presentacion PARAFRASEA la intro de Facebook («Somos una empresa familiar emprendedora que busca mejorar la salud en general de la poblacion atend...»), que Facebook devuelve truncada. Hay que pedirle al cliente el parrafo completo y sustituirlo palabra por palabra. Mientras tanto el sitio publica una parafrasis nuestra, no algo que CIMO haya escrito — y las palabras con las que un negocio se presenta son suyas, no del que le hace la web.",
+    "bloquea": [
+      "presentacion de la portada",
+      "descripcion de los datos estructurados"
+    ],
+    "marcador": false
+  },
+  {
+    "id": "dominio",
+    "titulo": "Dominio",
+    "detalle": "CIMO no tiene dominio registrado. astro.config.mjs usa cimo.hn provisionalmente, que es el que corresponde a su usuario de Instagram. Solo alimenta la URL canónica y los datos estructurados.",
+    "bloquea": [
+      "publicación"
+    ],
+    "marcador": false
+  },
+  {
+    "id": "copan",
+    "titulo": "Sede de La Entrada, Copán",
+    "detalle": "Fuera de esta fase por decisión del cliente. Cuando entre: se añade una entrada a clinica.sedes[] y contacto.astro se parte en contacto + ubicaciones.",
+    "bloquea": [],
+    "marcador": false
+  }
+]

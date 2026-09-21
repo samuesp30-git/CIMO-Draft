@@ -1,0 +1,9 @@
+
+.capturas/
+.tipos/
+node_modules/
+dist/
+.astro/
+
+.vercel
+.env*

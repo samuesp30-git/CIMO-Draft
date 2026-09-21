@@ -1,0 +1,57 @@
+---
+// Titular con rótulo de sección y firma.
+//
+// ES EL ÚNICO SITIO donde se escribe el <em> de la firma. En el cuerpo, <em>
+// sigue significando énfasis y sale en cursiva; dentro de un h1/h2/h3 significa
+// "esto va en la script", y esa ambigüedad se resuelve autorando siempre por
+// aquí y nunca a mano.
+//
+// La firma sale del logo: su wordmark lleva un degradado de pizarra a azul,
+// medido glifo a glifo (C #171E23 -> O #81A4B2). Aquí eso se dice partiendo el
+// titular en dos voces, no con un degradado literal, que no tendría color
+// computado que auditar y cuya mitad clara caería por debajo de 4.5:1.
+
+interface Props {
+  nivel?: 1 | 2 | 3;
+  /** Rótulo de sección en versalitas. Es el único sitio donde vive el oro. */
+  previo?: string;
+  /** La mitad que va en la script. Opcional: un titular puede no llevar firma. */
+  resalte?: string;
+  /** Sobre franja oscura (--ink): cambia los tres colores a la vez. */
+  sobreOscuro?: boolean;
+  class?: string;
+}
+const { nivel = 2, previo, resalte, sobreOscuro, class: clase } = Astro.props;
+const Etiqueta = `h${nivel}` as 'h1' | 'h2' | 'h3';
+---
+
+<div class:list={['titular', { oscuro: sobreOscuro }, clase]}>
+  {previo && <span class="versalita">{previo}</span>}
+  {/* El <span class="frase"> envuelve la mitad en serif para que el script la
+      pueda repartir en palabras sin tocar la firma, que se anima entera: una
+      firma repartida en trozos deja de ser un trazo. */}
+  <Etiqueta>
+    <span class="frase"><slot /></span>{resalte && <> <em>{resalte}</em></>}
+  </Etiqueta>
+</div>
+
+<style>
+  .titular { display: grid; gap: var(--s-1) }
+
+  /* LA FIRMA NO SE PARTE. Como bloque en linea, la frase en script cae ENTERA
+     a la linea siguiente en vez de romperse por un espacio. §3: una firma
+     repartida en trozos deja de ser un trazo, es un texto en cursiva.
+     Se vio en movil, donde "antes de empezar" quedaba como "antes de" arriba y
+     "empezar" debajo. En escritorio no pasaba, asi que no basta con mirar una
+     sola anchura. */
+  .titular :global(em) { display: inline-block }
+
+  /* Sobre la franja oscura cambian las tres voces a la vez: el rótulo al oro que
+     pasa sobre --ink (4.75:1), el titular a blanco y la firma a su tono claro
+     (6.75:1). Si se cambiara solo una, las otras dos fallarían en silencio. */
+  .oscuro :global(.versalita) { color: var(--text-seccion-oscuro) }
+  .oscuro :global(h1),
+  .oscuro :global(h2),
+  .oscuro :global(h3) { color: var(--base) }
+  .oscuro :global(em) { color: var(--firma-sobre-oscuro) }
+</style>

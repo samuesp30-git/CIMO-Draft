@@ -1,0 +1,109 @@
+---
+import BandaCierre from '../components/BandaCierre.astro';
+import Base from '../layouts/Base.astro';
+import Titular from '../components/Titular.astro';
+import Boton from '../components/Boton.astro';
+import servicios from '../data/servicios.json';
+import IconoEsp from '../components/IconoEsp.astro';
+
+// Cinco servicios, una página, anclas a #slug.
+//
+// El prototipo tenía chips que filtraban la lista. Aquí no filtran: son anclas.
+// Con cinco elementos, todos visibles a la vez, un filtro no reduce nada — es
+// un control que parece hacer algo y no hace nada. Además un ancla se indexa,
+// funciona sin JavaScript y se puede compartir.
+---
+
+<Base
+  titulo="Servicios"
+  descripcion="Ortodoncia invisible con Invisalign, brackets, higiene y prevención, odontopediatría y rehabilitación estética en Tegucigalpa."
+  actual="servicios"
+>
+  <section class="cabeza-fondo">
+    <div class="contenedor cabeza">
+      <Titular nivel={1} previo="Servicios" resalte="salud bucal">Especialistas en</Titular>
+      <nav class="anclas" aria-label="Ir a un servicio">
+        {servicios.map((s) => <a href={`#${s.slug}`}>{s.nombre}</a>)}
+      </nav>
+    </div>
+  </section>
+
+  <div class="contenedor lista">
+    {servicios.map((s) => (
+      <article class="servicio" id={s.slug}>
+        <div class="texto">
+          <h2>
+            {/* El icono va DENTRO del h2, en línea con el nombre.
+                Con la lámina de discos 3D no se podía: a 30px se reducían los
+                cinco a un disco azul con una mancha blanca y hubo que sacarlos
+                a bloque propio a 56. Estos son de línea y leen de sobra en
+                línea, así que el icono vuelve a su sitio — al lado del nombre,
+                no encima. Comprobado a 28, 36 y 48; se dejó en 44, donde el
+                detalle del trazo se distingue sin que el icono le gane el peso
+                al titular (~33px de caja alta).
+                alt vacío a propósito: el nombre del servicio está justo al
+                lado, en el propio titular. Describir el icono haría que un
+                lector de pantalla dijera el servicio dos veces. */}
+            {'iconoEsp' in s && <IconoEsp nombre={s.iconoEsp} tamano={44} alt="" />}
+            <span>{s.nombre}</span>
+          </h2>
+          <p class="resumen">{s.resumen}</p>
+          <p>{s.descripcion}</p>
+          {s.destacado && s.pagina && (
+            <p class="mas"><Boton variante="texto" href={s.pagina}>Ver la página de Invisalign →</Boton></p>
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <BandaCierre>¿No estás seguro de qué necesitas? Escríbenos y lo vemos en una valoración.</BandaCierre>
+</Base>
+
+<style>
+  /* LA CABECERA DEJA DE SER BLANCA. Esta página era blanca de arriba abajo y
+     era la más plana del sitio: cinco artículos separados por una línea de 1 px
+     y nada más. Ahora abre sobre una superficie y cierra con la banda oscura,
+     que es el mismo ritmo claro-oscuro que ya tenía el inicio.
+
+     El lavado sale de originales/haikei-degradado.png, ACLARADO UN 68 %: tal
+     cual venía, su punto más oscuro dejaba a --oro-text —el color del rótulo
+     que va justo aquí— en 3.54:1. Ver scripts/tramas.mjs para el cálculo.
+
+     El color sólido va debajo por la regla de siempre: si el .webp no carga,
+     el texto no puede acabar sobre nada. */
+  .cabeza-fondo {
+    background-color: var(--marca-tenue);
+    background-image: url('img/lavado.webp');
+    background-size: cover;
+    background-position: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .cabeza { padding-block: var(--s-5) var(--s-4); display: grid; gap: var(--s-3) }
+
+  .anclas { display: flex; flex-wrap: wrap; gap: var(--s-1) }
+  .anclas a {
+    font-family: var(--font-datos);
+    font-size: var(--step--1);
+    color: var(--ink);
+    background: var(--surface-card-marca);
+    border: 1px solid transparent;
+    border-radius: var(--radius-chip);
+    padding: 0.4375rem 0.875rem;
+  }
+  .anclas a:hover { border-color: var(--marca-text); color: var(--ink) }
+
+  .lista { display: grid; gap: 0; padding-bottom: var(--s-4) }
+  .servicio { border-top: 1px solid var(--line); padding-block: var(--s-4) }
+  /* scroll-margin para que el ancla no quede debajo de la cabecera pegajosa */
+  .servicio { scroll-margin-top: calc(var(--cabecera-alto) + var(--s-2)) }
+  .texto { display: grid; gap: var(--s-2) }
+  /* El icono vuelve a la línea del titular. `align-items: center` y no
+     `baseline`: una imagen no tiene línea base tipográfica, así que con
+     baseline se cuelga por debajo del texto. */
+  .servicio h2 { font-size: var(--step-3); display: flex; align-items: center; gap: 0.45em }
+  .resumen { font-size: var(--step-1); color: var(--ink-soft) }
+  .mas { margin-top: calc(var(--s-1) * -1) }
+
+
+</style>

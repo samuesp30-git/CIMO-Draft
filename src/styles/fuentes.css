@@ -1,0 +1,63 @@
+/* GENERADO POR scripts/fuentes.mjs — no editar a mano.
+   Se regenera con `npm run fuentes`.
+
+   Rutas SIN barra inicial: con barra, el navegador las busca en la raiz del
+   disco y bajo file:// no las encuentra. */
+
+@font-face {
+  font-family: 'Jost';
+  src: url('fonts/jost-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+
+@font-face {
+  font-family: 'Tinos';
+  src: url('fonts/tinos-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+
+@font-face {
+  font-family: 'Tinos';
+  src: url('fonts/tinos-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+
+@font-face {
+  font-family: 'Tinos';
+  src: url('fonts/tinos-latin-400-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+
+/* La firma. Cara: Allison (Open Font License), subconjuntada al latino con
+   acentos espanoles.
+
+   Sustituye a Brittany Signature, que es la del prototipo pero cuya licencia
+   dice literalmente "ONLY for PERSONAL USE. NO COMMERCIAL USE ALLOWED" — y el
+   sitio de una clinica es uso comercial. Allison se eligio MIDIENDO contra
+   Brittany (scripts/comparar-firma.mjs): trazo/x 0.859 contra 0.879, ancho/x
+   10.06 contra 10.42, la mas cercana de seis candidatas por un factor de dos.
+
+   Los overrides estan medidos del binario. Sin ellos la firma empuja el
+   interlineado del h1. */
+@font-face {
+  font-family: 'Firma CIMO';
+  src: url('fonts/firma-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  ascent-override: 89.0%;
+  descent-override: 38.0%;
+  line-gap-override: 0.0%;
+}

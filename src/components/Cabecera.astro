@@ -1,0 +1,98 @@
+---
+import CitaCTA from './CitaCTA.astro';
+import Logo from './Logo.astro';
+import Boton from './Boton.astro';
+
+// Cabecera. Cinco destinos, así que NO hay menú desplegable.
+//
+// Un desplegable esconde la navegación detrás de un clic y necesita JavaScript,
+// estado y foco atrapado. Con cinco enlaces cabe una fila que en móvil se
+// desplaza en horizontal: cero JS, cero estado, y todo visible para un buscador.
+// Si algún día pasan de ocho, se replantea.
+
+interface Props { actual?: string }
+const { actual } = Astro.props;
+
+const enlaces = [
+  ['index.html', 'Inicio', 'inicio'],
+  ['servicios.html', 'Servicios', 'servicios'],
+  ['invisalign.html', 'Invisalign', 'invisalign'],
+  ['preguntas.html', 'Preguntas', 'preguntas'],
+  ['contacto.html', 'Contacto', 'contacto'],
+];
+---
+
+<header class="cab">
+  <div class="dentro">
+    <a class="marca" href="index.html" aria-label="CIMO, inicio">
+      <Logo lado={34} />
+    </a>
+
+    <nav class="nav" aria-label="Principal">
+      <ul>
+        {enlaces.map(([href, texto, id]) => (
+          <li>
+            <a href={href} aria-current={actual === id ? 'page' : undefined}>{texto}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <CitaCTA tamano="sm" />
+  </div>
+</header>
+
+<style>
+  .cab {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--base);
+    border-bottom: 1px solid var(--line);
+  }
+  .dentro {
+    max-width: var(--container);
+    margin-inline: auto;
+    padding: var(--s-2) var(--s-3);
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: var(--cabecera-alto);
+  }
+  .marca { border-bottom: 0; margin-right: auto }
+  .marca:hover { border-bottom: 0 }
+
+  .nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: var(--s-3);
+  }
+  .nav a {
+    font-family: var(--font-datos);
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    border-bottom: 0;
+    /* Alto cómodo para un pulgar. Estaban en 38 px. */
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .nav a:hover { color: var(--ink) }
+  /* La página actual se marca con peso y color, no solo con color: un indicador
+     que depende de un único canal desaparece para quien no distingue ese canal. */
+  .nav a[aria-current='page'] { color: var(--ink); font-weight: 500 }
+
+  /* ENVUELVE, no se desplaza. Con overflow-x el quinto enlace —«Contacto», o
+     sea la página cuyo trabajo entero es convertir— quedaba cortado 31 px a
+     375 px de ancho, sin degradado ni flecha ni nada que dijera que la fila se
+     mueve: quien navega con una mano nunca se entera de que está ahí. Cinco
+     enlaces caben en dos filas de 3+2 y se ven todos. */
+  @media (max-width: 60rem) {
+    .dentro { flex-wrap: wrap; gap: var(--s-2) }
+    .nav { order: 3; width: 100% }
+    .nav ul { flex-wrap: wrap; column-gap: var(--s-3); row-gap: 0 }
+  }
+</style>

@@ -1,0 +1,456 @@
+---
+// Asistente de IA. Burbuja abajo a la IZQUIERDA, y no por capricho.
+//
+// El rincon inferior derecho ya esta ocupado y con la aritmetica hecha a mano:
+// WhatsAppFlotante en bottom 1.25rem (z-index 100) y SubirArriba en 5.5rem
+// (z-index 90, y su comentario documenta la cuenta). Un tercer boton rompe esa
+// suma y, peor, empuja hacia abajo el canal REAL de la clinica. A la izquierda
+// no toca nada, y separa visualmente «asistente automatico» de «personas de
+// verdad», que ademas es lo honesto.
+//
+// data-wa-contacto en la raiz: el script construye enlaces wa.me para las
+// derivaciones, asi que este componente ES una entrada explicita a WhatsApp.
+// verificar.mjs §6 cuenta `wa.me/` en toda la pagina —scripts incluidos— y solo
+// perdona los que se declaran. Declararlo es justo para lo que existe la marca.
+//
+// El backend vive en OTRO proyecto de Vercel. El sitio se despliega ya
+// compilado (.vercelignore excluye el codigo fuente) y tiene que abrir desde
+// file://; meter una funcion aqui obligaria a rehacer el despliegue entero.
+import clinica from '../data/clinica.json';
+
+const API = import.meta.env.PUBLIC_AGENTE_URL ?? 'https://cimo-agente.vercel.app/api/chat';
+const { numero } = clinica.whatsapp;
+---
+
+<div class="chat" data-chat data-api={API} data-wa={numero} data-wa-contacto>
+  <button type="button" class="burbuja" data-abrir aria-expanded="false" aria-label="Abrir el asistente de CIMO">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-3.5 2.5V17.6A7.5 7.5 0 0 1 12.5 4h.2a7.5 7.5 0 0 1 7.3 7.5Z"></path>
+      <circle cx="9.5" cy="11.5" r="1" fill="currentColor"></circle>
+      <circle cx="13" cy="11.5" r="1" fill="currentColor"></circle>
+      <circle cx="16.5" cy="11.5" r="1" fill="currentColor"></circle>
+    </svg>
+  </button>
+
+  <section class="panel" data-panel hidden aria-label="Asistente de CIMO">
+    <header class="barra">
+      <div>
+        <p class="titulo">Asistente de CIMO</p>
+        <p class="pie">Respuestas automáticas. Para agendar te pasamos con alguien.</p>
+      </div>
+      <button type="button" class="cerrar" data-cerrar aria-label="Cerrar el asistente">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>
+    </header>
+
+    <div class="mensajes" data-mensajes role="log" aria-live="polite" aria-atomic="false"></div>
+
+    <form class="entrada" data-form>
+      <label class="oculto" for="chat-texto">Escribe tu pregunta</label>
+      <input
+        id="chat-texto"
+        data-texto
+        type="text"
+        autocomplete="off"
+        maxlength="600"
+        placeholder="¿A qué hora abren?"
+      />
+      <button type="submit" data-enviar aria-label="Enviar">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 12h15M13 6l6 6-6 6"></path>
+        </svg>
+      </button>
+    </form>
+  </section>
+</div>
+
+<script>
+  (function () {
+    var raiz = document.querySelector('[data-chat]');
+    if (!raiz) return;
+
+    // Sin backend no hay chat. Bajo file:// —la demo por USB, que es el eje del
+    // proyecto— se retira entero en vez de enseñar un boton que no hace nada.
+    if (location.protocol === 'file:' || typeof fetch !== 'function') {
+      raiz.remove();
+      return;
+    }
+
+    var API = raiz.getAttribute('data-api');
+    var WA = raiz.getAttribute('data-wa');
+    var panel = raiz.querySelector('[data-panel]');
+    var abrir = raiz.querySelector('[data-abrir]');
+    var lista = raiz.querySelector('[data-mensajes]');
+    var form = raiz.querySelector('[data-form]');
+    var campo = raiz.querySelector('[data-texto]');
+    var enviar = raiz.querySelector('[data-enviar]');
+
+    var MAX_TURNOS = 12;
+    var historial = [];
+    var ocupado = false;
+
+    try {
+      var guardado = sessionStorage.getItem('cimo-chat');
+      if (guardado) historial = JSON.parse(guardado);
+    } catch (e) { /* modo privado, o almacenamiento lleno: se empieza de cero */ }
+
+    function recordar() {
+      try { sessionStorage.setItem('cimo-chat', JSON.stringify(historial)); } catch (e) {}
+    }
+
+    function burbuja(rol, texto) {
+      var div = document.createElement('div');
+      div.className = 'burbuja ' + rol;
+      div.textContent = texto;
+      lista.appendChild(div);
+      lista.scrollTop = lista.scrollHeight;
+      return div;
+    }
+
+    // Un SOLO sitio donde se construye el enlace de respaldo. No es estilo:
+    // verificar.mjs §6 cuenta cada `wa.me/` de la pagina —los de los scripts
+    // tambien— y el presupuesto por pagina es de uno para este componente.
+    // Tres copias de la misma linea lo reventaban, y con razon.
+    function salida(etiqueta) {
+      return { url: 'https://wa.me/' + WA, etiqueta: etiqueta };
+    }
+
+    function botonWhatsApp(accion) {
+      var a = document.createElement('a');
+      a.className = 'accion';
+      a.href = accion.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = accion.etiqueta;
+      lista.appendChild(a);
+      lista.scrollTop = lista.scrollHeight;
+    }
+
+    function pintarHistorial() {
+      lista.textContent = '';
+      for (var i = 0; i < historial.length; i++) {
+        burbuja(historial[i].rol === 'usuario' ? 'mia' : 'suya', historial[i].texto);
+      }
+      if (!historial.length) {
+        burbuja('suya', 'Hola. Puedo contarte del horario, los servicios o cómo agendar. ¿Qué necesitas?');
+      }
+    }
+
+    function cerrado() {
+      ocupado = true;
+      campo.disabled = true;
+      enviar.disabled = true;
+      campo.placeholder = 'Sigue por WhatsApp';
+    }
+
+    abrir.addEventListener('click', function () {
+      var visible = !panel.hasAttribute('hidden');
+      if (visible) {
+        panel.setAttribute('hidden', '');
+        abrir.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      panel.removeAttribute('hidden');
+      abrir.setAttribute('aria-expanded', 'true');
+      if (!lista.childNodes.length) pintarHistorial();
+      campo.focus();
+    });
+
+    raiz.querySelector('[data-cerrar]').addEventListener('click', function () {
+      panel.setAttribute('hidden', '');
+      abrir.setAttribute('aria-expanded', 'false');
+      abrir.focus();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !panel.hasAttribute('hidden')) {
+        panel.setAttribute('hidden', '');
+        abrir.setAttribute('aria-expanded', 'false');
+        abrir.focus();
+      }
+    });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (ocupado) return;
+
+      var texto = campo.value.trim();
+      if (!texto) return;
+
+      campo.value = '';
+      burbuja('mia', texto);
+      ocupado = true;
+      enviar.disabled = true;
+
+      var esperando = burbuja('suya esperando', '···');
+
+      fetch(API, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ mensaje: texto, historial: historial }),
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          esperando.remove();
+
+          if (!res.ok) {
+            burbuja('suya', res.d && res.d.error ? res.d.error : 'No pude responder ahora mismo.');
+            botonWhatsApp(salida('Escribir por WhatsApp'));
+            cerrado();
+            return;
+          }
+
+          burbuja('suya', res.d.texto);
+          if (res.d.accion) botonWhatsApp(res.d.accion);
+
+          historial.push({ rol: 'usuario', texto: texto });
+          historial.push({ rol: 'asistente', texto: res.d.texto });
+          recordar();
+
+          if (historial.length >= MAX_TURNOS * 2) {
+            burbuja('suya', 'Hemos hablado bastante. Para seguir, mejor escríbele a la clínica.');
+            botonWhatsApp(salida('Seguir por WhatsApp'));
+            cerrado();
+            return;
+          }
+
+          ocupado = false;
+          enviar.disabled = false;
+          campo.focus();
+        })
+        .catch(function () {
+          esperando.remove();
+          burbuja('suya', 'No hay conexión con el asistente. Escríbele a la clínica y te atienden igual.');
+          botonWhatsApp(salida('Escribir por WhatsApp'));
+          cerrado();
+        });
+    });
+  })();
+</script>
+
+<style>
+  /* Sin JavaScript el boton no podria hacer nada. Mismo contrato que
+     [data-abrir-cita] en tokens.css: la clase `js` la pone Base.astro antes del
+     primer pintado, asi que no hay salto de maquetacion. */
+  :global(html:not(.js)) .chat { display: none }
+
+  /* La demo por USB. Sin backend no hay chat, y `local` lo marca antes del
+     primer pintado para que no llegue a verse. El script del componente lo
+     retira además del DOM; esto solo evita el parpadeo. */
+  :global(html.local) .chat { display: none }
+
+  .burbuja {
+    position: fixed;
+    left: calc(1.25rem + env(safe-area-inset-left, 0px));
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+
+    border: 0;
+    border-radius: 50%;
+    background: var(--cta-fondo);
+    color: var(--cta-text);
+    cursor: pointer;
+
+    /* Neutra, como la del icono de WhatsApp: un objeto bajo luz blanca proyecta
+       sombra gris, no un halo de su propio color. */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .16), 0 8px 20px rgba(20, 30, 35, .22);
+    transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+  }
+
+  .burbuja:hover,
+  .burbuja:focus-visible { transform: translateY(-2px) }
+  .burbuja:active { transform: translateY(0) }
+  .burbuja svg { display: block }
+
+  .panel {
+    position: fixed;
+    left: calc(1.25rem + env(safe-area-inset-left, 0px));
+    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    z-index: 99;
+
+    width: min(23rem, calc(100vw - 2.5rem));
+    height: min(30rem, calc(100vh - 8rem));
+    display: flex;
+    flex-direction: column;
+
+    background: var(--surface-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius);
+    box-shadow: var(--sombra-flotante);
+    overflow: hidden;
+    font-family: var(--font-datos);
+  }
+
+  .panel[hidden] { display: none }
+
+  .barra {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--s-1);
+    padding: var(--s-2);
+    border-bottom: 1px solid var(--border-card);
+  }
+
+  .titulo {
+    margin: 0;
+    font-size: var(--step--1);
+    font-weight: 500;
+    color: var(--text-body);
+  }
+
+  .pie {
+    margin: .15rem 0 0;
+    font-size: var(--step--2);
+    line-height: 1.35;
+    color: var(--text-terciario);
+  }
+
+  .cerrar {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--text-secundario);
+    cursor: pointer;
+  }
+
+  .cerrar:hover { background: var(--surface-alterna) }
+
+  .mensajes {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--s-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
+    font-size: var(--step--1);
+    line-height: 1.5;
+  }
+
+  /* Las burbujas se crean con createElement y NO reciben el hash de scoping de
+     Astro (documentado en AgendarCita.astro:421). Se anclan con :global() desde
+     .mensajes, que si esta en la plantilla. */
+  .mensajes :global(.burbuja) {
+    max-width: 85%;
+    padding: .5rem .7rem;
+    border-radius: var(--radius);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .mensajes :global(.mia) {
+    align-self: flex-end;
+    background: var(--marca-suave);
+    color: var(--text-body);
+  }
+
+  .mensajes :global(.suya) {
+    align-self: flex-start;
+    background: var(--surface-alterna);
+    color: var(--text-body);
+  }
+
+  .mensajes :global(.esperando) {
+    color: var(--text-terciario);
+    letter-spacing: .1em;
+  }
+
+  .mensajes :global(.accion) {
+    align-self: flex-start;
+    padding: .45rem .8rem;
+    border-radius: var(--radius-chip);
+    background: var(--whatsapp);
+    color: #fff;
+    font-size: var(--step--2);
+    text-decoration: none;
+  }
+
+  .mensajes :global(.accion:hover) { background: var(--whatsapp-oscuro) }
+
+  .entrada {
+    display: flex;
+    gap: var(--s-1);
+    padding: var(--s-1) var(--s-2) var(--s-2);
+    border-top: 1px solid var(--border-card);
+  }
+
+  .entrada input {
+    flex: 1;
+    min-width: 0;
+    padding: .5rem .7rem;
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius);
+    background: var(--surface-page);
+    color: var(--text-body);
+    font: inherit;
+    font-size: var(--step--1);
+  }
+
+  .entrada input:focus-visible { outline: 2px solid var(--marca-text); outline-offset: 1px }
+  .entrada input:disabled { color: var(--text-terciario) }
+
+  .entrada button {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--cta-fondo);
+    color: var(--cta-text);
+    cursor: pointer;
+  }
+
+  .entrada button:hover:not(:disabled) { background: var(--cta-fondo-hover) }
+  .entrada button:disabled { background: var(--desactivado); cursor: default }
+
+  .oculto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* A 360 px la burbuja se encoge igual que la de WhatsApp, y el panel pasa a
+     ocupar el ancho util para que quepa el texto. */
+  @media (max-width: 24rem) {
+    .burbuja {
+      width: 3.125rem;
+      height: 3.125rem;
+      left: calc(1rem + env(safe-area-inset-left, 0px));
+      bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    }
+    .panel {
+      left: calc(1rem + env(safe-area-inset-left, 0px));
+      right: calc(1rem + env(safe-area-inset-right, 0px));
+      bottom: calc(4.875rem + env(safe-area-inset-bottom, 0px));
+      width: auto;
+      height: min(26rem, calc(100vh - 7rem));
+    }
+  }
+
+  @media print {
+    .chat { display: none }
+  }
+</style>

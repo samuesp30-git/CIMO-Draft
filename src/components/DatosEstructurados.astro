@@ -1,0 +1,63 @@
+---
+import clinica from '../data/clinica.json';
+
+// JSON-LD. Lo que un buscador lee para saber que esto es una clínica dental de
+// Tegucigalpa con un horario concreto.
+//
+// TRES COSAS QUE NO ESTÁN AQUÍ, Y NO POR OLVIDO:
+//
+//   - aggregateRating y review. CIMO tiene CERO reseñas públicas (su Facebook
+//     marca 0). Declarar una valoración que no existe es exactamente el tipo de
+//     dato inventado que este proyecto no produce, y además es sancionable por
+//     Google como marcado engañoso.
+//   - geo. La dirección está sin confirmar tras la mudanza anunciada en mayo de
+//     2026, así que no hay coordenadas: unas inventadas mandarían pacientes al
+//     sitio equivocado.
+//   - medicalSpecialty más allá de lo odontológico. El nombre dice "Médico
+//     Odontológico" pero todo el contenido verificable es dental.
+
+interface Props { url: string }
+const { url } = Astro.props;
+
+const sede = clinica.sedes[0];
+const dias = {
+  0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday',
+  4: 'Thursday', 5: 'Friday', 6: 'Saturday',
+} as const;
+
+const horario = sede.horarios.map((t) => ({
+  '@type': 'OpeningHoursSpecification',
+  dayOfWeek: t.dow.map((d) => dias[d as keyof typeof dias]),
+  opens: t.apertura,
+  closes: t.cierre,
+}));
+
+const datos = {
+  '@context': 'https://schema.org',
+  '@type': 'Dentist',
+  name: clinica.nombre,
+  legalName: clinica.nombreCompleto,
+  description: clinica.descripcion,
+  url,
+  telephone: clinica.telefono.href,
+  email: clinica.email,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: `${sede.direccion.calle}, ${sede.direccion.edificio}, ${sede.direccion.detalle}`,
+    addressLocality: sede.direccion.ciudad,
+    postalCode: sede.direccion.codigoPostal,
+    addressCountry: 'HN',
+  },
+  openingHoursSpecification: horario,
+  sameAs: [clinica.redes.instagram, clinica.redes.facebook, clinica.redes.tiktok],
+  availableService: [
+    { '@type': 'MedicalProcedure', name: 'Ortodoncia invisible (Invisalign)' },
+    { '@type': 'MedicalProcedure', name: 'Ortodoncia con brackets' },
+    { '@type': 'MedicalProcedure', name: 'Higiene y prevención dental' },
+    { '@type': 'MedicalProcedure', name: 'Odontopediatría' },
+    { '@type': 'MedicalProcedure', name: 'Rehabilitación estética' },
+  ],
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(datos)} is:inline />

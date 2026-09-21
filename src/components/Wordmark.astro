@@ -1,0 +1,57 @@
+---
+// La marca escrita, EN TIPO. Nunca una imagen.
+//
+// No hay logo vectorial: lo único público son 150 x 150 px del perfil de
+// Instagram, y ampliarlo se ve. Pero el wordmark no hace falta ampliarlo, porque
+// se puede componer: midiendo el logo salió que es una geométrica ligera con
+// O/altura de mayúscula 0.94, trazo/altura 0.118 (peso Light) y los huecos entre
+// letras a +0.1em. Eso es exactamente Jost 300 con --track-wordmark.
+//
+// El SÍMBOLO circular (la cruz con el diente) es otra cosa: ese no se compone y
+// no se dibuja de memoria. Va como Marcador hasta que el cliente entregue el
+// original. Ver pendientes.json -> logo-vector.
+
+interface Props {
+  /** Cuerpo en px del wordmark. La bajada se calcula desde aquí. */
+  tamano?: number;
+  sobreOscuro?: boolean;
+  /** Añade "Centro Integral Médico Odontológico" debajo. */
+  conBajada?: boolean;
+  class?: string;
+}
+const { tamano = 30, sobreOscuro, conBajada, class: clase } = Astro.props;
+// Suelo de 11 px, no de 9: a 9 px la bajada del pie era el texto más pequeño
+// del sitio y quedaba por debajo de cualquier umbral de legibilidad. 11 px es
+// pequeño a propósito —es una bajada— pero se lee.
+const bajada = Math.max(11, Math.round(tamano * 0.26));
+---
+
+<span class:list={['wm', { oscuro: sobreOscuro }, clase]} style={`--wm-cuerpo:${tamano}px;--wm-bajada:${bajada}px`}>
+  <span class="nombre">CIMO</span>
+  {conBajada && <span class="bajada">Centro Integral Médico Odontológico</span>}
+</span>
+
+<style>
+  .wm { display: inline-grid; gap: 4px }
+
+  .nombre {
+    font-family: var(--font-wordmark);
+    font-weight: 300;             /* trazo/altura 0.118, medido del logo */
+    font-size: var(--wm-cuerpo);
+    line-height: 1;
+    letter-spacing: var(--track-wordmark);   /* +0.1em, medido */
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .bajada {
+    font-family: var(--font-datos);
+    font-size: var(--wm-bajada);
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    color: var(--ink-faint);
+  }
+
+  .oscuro .nombre { color: var(--base) }
+  .oscuro .bajada { color: var(--sobre-oscuro-suave) }
+</style>

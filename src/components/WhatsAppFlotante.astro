@@ -1,0 +1,115 @@
+---
+// Icono flotante de WhatsApp. Ver DESIGN.md seccion 7.
+//
+// Es un ICONO, no un boton: circulo, glifo, sin texto ni etiqueta. Vive en
+// todas las paginas y es el UNICO punto de entrada a WhatsApp aparte del envio
+// del dialogo de cita; no se duplica en contacto ni en ninguna seccion.
+//
+// wa.me es un enlace normal: sin backend, sin API de Meta, sin cuenta
+// Business. Si no hay app instalada, redirige solo a WhatsApp Web.
+//
+// El numero de CIMO (9770-3774) es REAL y esta verificado en seis
+// publicaciones suyas. Aqui no hay marcador que sustituir antes de publicar.
+import clinica from '../data/clinica.json';
+import { enlaceWhatsApp, rellenar } from '../lib/whatsapp';
+
+interface Props {
+  /** Nombre del servicio, cuando la pagina trata de uno concreto. */
+  contexto?: string;
+}
+const { contexto } = Astro.props;
+
+// El texto cambia segun donde este el visitante, asi la clinica sabe la
+// intencion antes de contestar: alguien que llega buscando ortodoncia invisible
+// y toca el icono no deberia enviar "informacion sobre sus servicios".
+const { numero, plantillas } = clinica.whatsapp;
+const mensaje = contexto
+  ? rellenar(plantillas.servicio, { servicio: contexto })
+  : plantillas.general;
+
+const href = enlaceWhatsApp(numero, mensaje);
+---
+
+<a
+  class="wa"
+  href={href}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Escríbenos por WhatsApp"
+>
+  <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+    <path
+      fill="currentColor"
+      d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.174.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.247-.694.247-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884a9.82 9.82 0 0 1 6.988 2.896 9.83 9.83 0 0 1 2.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.359.101 11.944c0 2.105.549 4.16 1.595 5.973L0 24l6.335-1.652a11.9 11.9 0 0 0 5.71 1.454h.005c6.581 0 11.941-5.359 11.944-11.945 0-3.191-1.24-6.19-3.495-8.446"
+    ></path>
+  </svg>
+</a>
+
+<style>
+  .wa {
+    position: fixed;
+    right: calc(1.25rem + env(safe-area-inset-right, 0px));
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    z-index: 100;
+
+    /* 56px: por encima del minimo tactil de 44px */
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+    background: var(--whatsapp);
+    color: #fff;
+
+    /* Sombra en dos capas: contacto cerrado y difusion amplia.
+       Neutra, no verde. Antes la capa ancha era rgba(37,211,102,.34), es decir
+       el propio color del boton derramado por debajo: un halo cromatico que no
+       corresponde a ninguna luz real y que es la firma visual del componente
+       generado. Un objeto verde bajo luz blanca proyecta sombra gris. */
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.16),
+      0 8px 20px rgba(20, 40, 30, 0.22);
+
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .wa:hover,
+  .wa:focus-visible {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.18),
+      0 12px 26px rgba(20, 40, 30, 0.28);
+  }
+
+  .wa:active {
+    transform: translateY(0);
+  }
+
+  .wa svg {
+    display: block;
+  }
+
+  /* En moviles estrechos se reduce para no comerse la pantalla, sin bajar
+     nunca del area tactil minima. */
+  @media (max-width: 24rem) {
+    .wa {
+      width: 3.125rem;
+      height: 3.125rem;
+      right: calc(1rem + env(safe-area-inset-right, 0px));
+      bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    }
+    .wa svg {
+      width: 25px;
+      height: 25px;
+    }
+  }
+
+  @media print {
+    .wa {
+      display: none;
+    }
+  }
+</style>

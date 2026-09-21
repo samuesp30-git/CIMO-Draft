@@ -1,0 +1,51 @@
+{
+  "nota": "Preguntas que el equipo de CIMO considera recurrentes y fáciles de contestar, redactadas POR ELLOS. Es la única fuente del asistente que no sale de una publicación pública: sale de la clínica directamente, así que es la de mayor autoridad. El array `respuestas` nace vacío a propósito — nada de lo que hay aquí lo inventa quien hace el sitio.",
+
+  "comoSeLlena": "Cada entrada necesita las cuatro claves. `certeza` sigue el mismo vocabulario del wiki: `confirmado` (lo dijo la clínica) se afirma liso; `probable` se dice con matiz visible; `sin-confirmar` no entra aquí, se queda fuera del archivo. `fuente` dice QUIÉN lo dijo y CUÁNDO, para poder volver a preguntarle a esa persona si cambia.",
+
+  "respuestas": [],
+
+  "porPreguntar": [
+    {
+      "pregunta": "¿Cuánto dura un tratamiento de Invisalign, y cada cuánto son los controles?",
+      "porQue": "Es la segunda pregunta de cualquiera que se interese por alineadores, después del precio. No consta en ninguna publicación."
+    },
+    {
+      "pregunta": "¿La primera consulta o el escaneo con el iTero tienen costo? ¿Hay valoración gratuita?",
+      "porQue": "Determina si el asistente puede invitar a agendar sin que el paciente se sienta engañado al llegar."
+    },
+    {
+      "pregunta": "¿Qué formas de pago aceptan? ¿Tarjeta, efectivo, cuotas, financiamiento?",
+      "porQue": "Distinto de «cuánto cuesta». Se puede contestar sin publicar una sola cifra, y quita muchísimas consultas."
+    },
+    {
+      "pregunta": "¿Atienden urgencias o dolor agudo? ¿Hay alguna vía fuera de horario?",
+      "porQue": "El asistente tiene que saber a dónde mandar a alguien con dolor un domingo. Hoy solo sabe decir que está cerrado."
+    },
+    {
+      "pregunta": "¿Desde qué edad atienden niños?",
+      "porQue": "Consta que hay odontopediatría, pero no desde qué edad. Es una pregunta de madre, muy frecuente."
+    },
+    {
+      "pregunta": "¿Hacen extracciones, endodoncia, implantes o blanqueamiento?",
+      "porQue": "Ninguno de los cuatro consta como servicio. «Rehabilitación estética» no especifica si incluye coronas, carillas, prótesis o implantes."
+    },
+    {
+      "pregunta": "¿Cuánto dura una cita típica? ¿Hay parqueo en la torre? ¿Es accesible en silla de ruedas?",
+      "porQue": "Logística de la visita. Barata de contestar, y evita que alguien llegue mal preparado."
+    },
+    {
+      "pregunta": "¿Qué cubre exactamente el beneficio de Smart Fit Plan Black?",
+      "porQue": "La alianza la publicó el gimnasio, no CIMO. Los términos son desconocidos y alguien va a preguntar."
+    },
+    {
+      "pregunta": "¿Quién contesta el WhatsApp y en qué plazo suele responder?",
+      "porQue": "El asistente promete que «una persona confirma la cita». Necesita saber si eso es en minutos o al día siguiente para no prometer de más."
+    },
+    {
+      "pregunta": "¿Atienden en La Entrada, Copán? ¿Con qué horario y qué número?",
+      "porQue": "La sede existe pero queda fuera de esta fase. Si alguien escribe desde Copán, hoy el asistente no sabe qué decirle."
+    }
+  ],
+  "porPreguntarNota": "Esta lista NO es contenido: es el guion de lo que hay que preguntarle a la clínica. Cuando una se conteste, se mueve a `respuestas` con su fuente y desaparece de aquí. Se solapa a propósito con `Cimo Vault/wiki/proyecto/Entrevista 2026-09-22.md`, que es el documento largo; esto es solo lo que afecta al asistente."
+}

@@ -1,0 +1,477 @@
+/* CIMO — tokens y base.
+   ────────────────────────────────────────────────────────────────────────────
+   Fuente de la verdad de los COLORES: research/tokens.js. Los hex de aquí salen
+   de su salida y las cifras de contraste de los comentarios también. Si cambia
+   un color, se cambia allí, se ejecuta `npm run tokens`, y se copia. No al revés.
+
+   Regla que ordena el sistema: ningún color se elige. Se mide, y se verifica
+   contra CADA fondo donde aterriza (--base, --surface y --ink), no solo contra
+   blanco. Medir solo contra blanco ya costó dos fallos en el sitio hermano.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════ 1. FUENTES */
+/*
+   CERO CDN. El sitio abre desde file:// con doble clic, así que no hay ningún
+   `@import` de fonts.googleapis ni ningún <link> que resolver. Los .woff2 se
+   copian de @fontsource a public/fonts/ con `npm run fuentes`.
+
+   Las rutas van SIN barra inicial ("fonts/…", no "/fonts/…"): con barra, el
+   navegador las busca en la raíz del disco y no las encuentra.
+
+   Tres roles, tres familias, y cada uno tiene su razón medida:
+
+   1. --font-wordmark  Jost 300. Sale de medir el wordmark del logo:
+                       O/altura de mayúscula 0.94 (círculo casi perfecto) y
+                       trazo/altura 0.118 (peso Light). El logo es una
+                       geométrica. NO se cambia.
+   2. --font-titulo    Tinos, métricamente compatible con Times New Roman.
+      --font           Times es fuente de sistema y no se puede redistribuir;
+                       Tinos (Apache-2.0) tiene los mismos anchos y alturas, así
+                       que la maqueta no se mueve entre una máquina con Times y
+                       una sin ella. Por eso la pila pide Times primero.
+   3. --font-firma     La firma de los titulares. El prototipo usaba Brittany
+                       Signature, y NO se puede: su propio Readme dice "ONLY for
+                       PERSONAL USE. NO COMMERCIAL USE ALLOWED". No es un matiz
+                       de licencia web contra licencia de escritorio — no está
+                       licenciada para uso comercial en ningún medio, y el sitio
+                       de una clínica lo es.
+                       Sustituta: ALLISON (Open Font License), elegida midiendo
+                       contra Brittany, no por nombre: trazo/x 0.859 contra
+                       0.879 y ancho/x 10.06 contra 10.42, la más cercana de seis
+                       candidatas por un factor de dos (scripts/comparar-firma.mjs).
+                       La familia se llama "Firma CIMO" para que cambiar la cara
+                       no obligue a tocar cada uso.
+*/
+
+/* Los @font-face viven en fuentes.css, GENERADO por scripts/fuentes.mjs con los
+   overrides verticales medidos del binario. Se regenera con `npm run fuentes`. */
+@import url('fuentes.css');
+
+/* Las tramas de figuras también son GENERADAS: scripts/tramas.mjs mide la
+   geometría de las láminas de Haikei y la reescribe como SVG incrustado. Ver su
+   cabecera para por qué no se usan los PNG tal cual. */
+@import url('tramas.css');
+
+:root {
+  --font-wordmark: 'Jost', 'Outfit', system-ui, sans-serif;
+  --font-titulo: 'Times New Roman', 'Tinos', 'Liberation Serif', Times, serif;
+  --font: 'Times New Roman', 'Tinos', 'Liberation Serif', Times, serif;
+  --font-firma: 'Firma CIMO', 'Allison', cursive;
+  /* datos, controles y cifras: la serif a 13-14 px se cierra; aquí manda la geométrica */
+  --font-datos: 'Jost', 'Outfit', system-ui, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════════ 2. COLORES */
+/*
+   Contraste medido contra los tres fondos reales. `npm run tokens` recalcula
+   todo y sale con código 1 si algo baja de su mínimo. Estado: FALLOS=0.
+
+   La marca es de UN SOLO TONO: 200°, entre el 94 % y el 96 % de todo el color
+   saturado de su material. Los neutros llevan el mismo tinte (201°) y por eso
+   no hay ni un gris puro en esta paleta: un gris neutro al lado de este azul
+   se ve sucio.
+*/
+:root {
+  /* --- anclas medidas del logo --- */
+  --marca: #6EB8DD;              /* hsl(200 62% 65%) · relleno del símbolo. 2.20 s/base */
+  --ink: #293237;                /* hsl(201 15% 19%) · decil oscuro del wordmark. 13.08 s/base */
+
+  /* --- fondos --- */
+  --base: #FFFFFF;
+  --surface: #F1F6F9;            /* 1.09 s/base */
+  --line: #DAE6EC;               /* 1.27 s/base · bordes de 1 px */
+
+  /* --- neutros, todos con tinte 201°, nunca gris puro --- */
+  --ink-oscuro: #182025;         /* 16.51 s/base · hover de botones sólidos */
+  --ink-marino: #1E3A47;         /* 11.99 s/base · hsl(199 41% 20%)
+                                    El MISMO valor que --ink con el doble de saturación.
+                                    Existe solo para el extremo azul de los degradados de
+                                    superficie oscura: --ink da 13.08 y este 11.99, así que
+                                    TODO punto del recorrido está por encima de 11:1 con
+                                    blanco. Es la única forma honesta de poner un degradado
+                                    debajo de texto: que los dos extremos pasen. */
+  --ink-soft: #4F6069;           /*  6.54 s/base ·  6.01 s/surface · texto secundario */
+  --ink-faint: #586973;          /*  5.70 s/base · 5.24 s/surface · 4.81 s/marca-suave
+                                    Mismo caso que --marca-text: daba 4.41 sobre --marca-suave. */
+
+  /* --- marca --- */
+  --marca-oscuro: #4AA2CF;       /* hover de rellenos de marca */
+  --marca-text: #2A6D8F;         /*  5.70 s/base · 5.24 s/surface · 4.81 s/marca-suave
+                                    El azul CUANDO ES TEXTO. Se oscureció desde #2C7397
+                                    porque daba 4.42 sobre --marca-suave: el barrido lo
+                                    cazó en un botón dentro de una tarjeta de ese color. */
+  --marca-suave: #DFEEF6;        /* tarjetas, chips, franjas */
+  --marca-tenue: #F4F9FB;        /* sección más leve que surface */
+
+  /* --- sobre fondo oscuro (--ink) --- */
+  --sobre-oscuro: #ABC2CD;       /*  7.06 s/ink */
+  --sobre-oscuro-suave: #84A2B0; /*  4.84 s/ink */
+  --marca-sobre-oscuro: #4EA6D3; /*  4.81 s/ink */
+
+  /* --- la firma necesita MÁS contraste que la serif: es monolineal y fina, así
+         que el azul de texto normal se le queda corto. Token propio, no capricho. --- */
+  --firma-color: #1F5D7D;        /*  7.19 s/base ·  6.61 s/surface */
+  --firma-sobre-oscuro: #7EC3E6; /*  6.75 s/ink */
+
+  /* --- oro: APROBADO por el cliente. Escribe RÓTULOS y nada más: los de
+         sección en versalitas y los de los campos del diálogo de cita. NO se
+         extiende a titulares ni a texto corrido. --- */
+  --oro-relleno: #C9922A;        /* solo fondo; el texto encima va en --ink (4.75:1) */
+  --oro-text: #8A6212;           /*  5.47 s/base ·  5.03 s/surface · el oro CUANDO ES TEXTO */
+  --oro-sobre-oscuro: #C9922A;   /*  4.75 s/ink · el mismo oro sobre franja oscura */
+
+  /* --- semánticos, un solo uso cada uno --- */
+  --abierto: #177541;            /*  5.74 s/base ·  5.27 s/surface */
+  --error: #A3312A;              /*  6.93 s/base */
+  --aviso: #8A6212;              /*  5.47 s/base */
+  --desactivado: #6E7C83;        /*  3.96 s/surface — FALLA A PROPÓSITO.
+                                    WCAG 1.4.3 exime los controles inhabilitados.
+                                    Está anotado para que nadie lo "arregle" y
+                                    rompa la señal de que el control no se usa. */
+
+  /* --- terceros --- */
+  --whatsapp: #25D366;           /* marca de WhatsApp, no de la clínica */
+  --whatsapp-oscuro: #1FB857;    /* su hover. Existe como token porque estaba escrito
+                                    a mano en Boton.astro y en el diálogo: dos copias del
+                                    mismo verde que al cambiar una se habrían separado. */
+
+  /* --- alias semánticos: la capa que usan los componentes --- */
+  --text-body: var(--ink);
+  --text-secundario: var(--ink-soft);
+  --text-terciario: var(--ink-faint);
+  --text-marca: var(--marca-text);
+  --text-seccion: var(--oro-text);
+  --text-seccion-oscuro: var(--oro-sobre-oscuro);
+  --text-firma: var(--firma-color);
+  --text-sobre-oscuro: var(--sobre-oscuro);
+  --surface-page: var(--base);
+  --surface-alterna: var(--surface);
+  --surface-card: var(--base);
+  --surface-card-marca: var(--marca-suave);
+  --surface-seccion-tenue: var(--marca-tenue);
+  --surface-oscura: var(--ink);
+  --border-card: var(--line);
+  --relleno-marca: var(--marca);
+  --relleno-marca-hover: var(--marca-oscuro);
+  --cta-fondo: var(--ink);
+  --cta-fondo-hover: var(--ink-oscuro);
+  --cta-text: var(--base);
+
+  /* ── DEGRADADOS ──────────────────────────────────────────────────────────
+     La regla: un degradado no tiene color computado que auditar, así que el
+     barrido del navegador NO lo ve. Por eso solo se admite un degradado bajo
+     texto cuando sus DOS EXTREMOS pasan contraste por separado; entonces todo
+     punto intermedio pasa, porque la luminancia entre dos paradas es monótona.
+
+     --degradado-marca lo incumple a propósito y por eso NO va bajo texto: su
+     extremo claro es --marca, que da 2.20:1 sobre blanco. Vive para rellenos
+     ciegos: filetes, remates, superficies sin una letra encima. */
+  --degradado-marca: linear-gradient(100deg, var(--ink) 0%, var(--marca) 100%);
+
+  /* Estos dos SÍ pueden llevar texto encima.
+     Oscuro: --ink-marino 11.99 → --ink 13.08 → --ink-oscuro 16.51 con blanco.
+     Claro:  --marca-suave, --marca-tenue y --base son los tres fondos claros ya
+             verificados; ningún texto del sistema falla contra ninguno. */
+  --degradado-oscuro: linear-gradient(155deg, var(--ink-marino) 0%, var(--ink) 52%, var(--ink-oscuro) 100%);
+  --degradado-claro: radial-gradient(125% 85% at 88% -10%, var(--marca-suave) 0%, var(--marca-tenue) 42%, var(--base) 100%);
+
+  /* ── TRAMA ───────────────────────────────────────────────────────────────
+     Una retícula de puntos finísima, no grano de papel. Sale del asunto: un
+     iTero no fotografía la boca, la reconstruye como NUBE DE PUNTOS. La textura
+     del sitio es el lenguaje de su propia máquina.
+     El color es --firma-sobre-oscuro (#7EC3E6) al 9 %: a esa alfa no mueve el
+     contraste del texto que va encima, y se comprueba con el barrido. */
+  --trama-puntos: radial-gradient(rgba(126, 195, 230, .09) 1px, transparent 1px);
+  --trama-paso: 22px 22px;
+
+  /* ── EL VELO DE LA TRAMA ─────────────────────────────────────────────────
+     --trama-circulos y --trama-hexagonos (en tramas.css) se ven de verdad, y
+     eso tiene un precio medido: aclaran el fondo lo bastante como para tumbar
+     los dos tokens que viven pegados al suelo de 4.5:1 sobre --ink, que son
+     --oro-sobre-oscuro (4.75) y --marca-sobre-oscuro (4.81). No se arregla
+     bajando la alfa: su techo es 0.02, o sea invisible.
+
+     Se arregla tapando. El velo cubre con --ink SÓLIDO la mitad donde va la
+     columna de texto, así que debajo de las letras el fondo es exactamente el
+     color contra el que se midió cada token, y la trama solo se ve en el aire
+     libre de la banda. Es más estricto que lo que hay hoy: --trama-puntos sí
+     corre por debajo del rótulo de oro en .promesa y en .franja.
+
+     El cero NO es `transparent`. La palabra clave vale rgba(0,0,0,0) y un
+     degradado que va de --ink a negro transparente pasa por grises sucios en
+     el medio. Con --ink a alfa 0 el recorrido es plano. */
+  --ink-nulo: rgba(41, 50, 55, 0);
+  --velo-angulo: 90deg;          /* lo voltean las medias queries al apilarse */
+  --velo-trama: linear-gradient(var(--velo-angulo), var(--ink) 0 34%, var(--ink-nulo) 72%);
+
+  /* Curva única para todo el movimiento: sale rápido y frena largo, que es como
+     se mueve algo con peso. Una sola curva en todo el sitio hace que las
+     animaciones se sientan del mismo objeto. */
+  --ease: cubic-bezier(.22, .61, .36, 1);
+}
+
+/* ══════════════════════════════════════════════════════════ 3. TIPOGRAFÍA */
+:root {
+  /* Escala: un paso entero por encima de la versión sans. Times tiene la altura
+     de x más baja, así que al mismo cuerpo se lee más pequeña. */
+  --step--2: 0.8125rem;
+  --step--1: 0.9375rem;
+  --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.0625rem);
+  --step-1: clamp(1.19rem, 1.12rem + 0.30vw, 1.33rem);
+  --step-2: clamp(1.41rem, 1.30rem + 0.52vw, 1.66rem);
+  --step-3: clamp(1.69rem, 1.49rem + 0.85vw, 2.07rem);
+  --step-4: clamp(2.02rem, 1.71rem + 1.32vw, 2.59rem);
+  --step-5: clamp(2.54rem, 1.90rem + 2.70vw, 3.88rem);
+
+  /* La firma va SIEMPRE por encima del titular al que acompaña: una script tiene
+     el ojo mucho menor a igual cuerpo. Calibrar al cambiar de cara. */
+  /* 1.92 para Allison. Era 1.34 cuando la cara era Brittany: sale de x/em 0.220
+     contra 0.316, o sea que Allison se ve un 30 % más pequeña al mismo cuerpo.
+     OJO al recalibrar si algún día cambia la cara: lo que gobierna el tamaño
+     aparente es la altura de x sobre el EM, no sobre la mayúscula. Con x/May el
+     ajuste sale al revés — comprobado mirando el espécimen. */
+  --firma-escala: 1.92;
+
+  --peso-titulo: 400;            /* Times no tiene Light: el titular es regular */
+  --peso-cuerpo: 400;
+  --peso-medio: 500;
+
+  --track-versalita: 0.14em;
+  --track-wordmark: 0.1em;       /* medido del logo */
+  --track-titular: 0;            /* Times ya viene ajustada: no se aprieta */
+  --track-firma: 0;              /* una script NUNCA lleva tracking */
+
+  --lh-titular: 1.14;
+  --lh-firma: 0.9;               /* los trazos de la script suben y bajan */
+  --lh-cuerpo: 1.58;
+  --measure: 66ch;
+}
+
+/* ════════════════════════════════════════════ 4. ESPACIADO, RADIOS, BORDE */
+:root {
+  --s-1: 0.5rem;
+  --s-2: 1rem;
+  --s-3: 1.5rem;
+  --s-4: 2rem;
+  --s-5: 3rem;
+  --s-6: 4rem;
+  --s-7: 6rem;
+  --container: 74rem;
+  /* El logo es una insignia circular y su O tiene un ratio de 0.94: el lenguaje
+     de la marca es curvo. Un radio de 4 px lo contradice. */
+  --radius: 10px;
+  --radius-chip: 999px;          /* SOLO el CTA principal y los chips. Si todo es
+                                    píldora, el eco del círculo deja de leerse. */
+  --borde: 1px solid var(--line);
+  --cabecera-alto: 4.5rem;
+}
+
+/* ═════════════════════════════════════════════════════════ 5. ELEVACIÓN */
+/* Manda el borde, no la sombra. Solo lo que flota de verdad lleva sombra, y sin
+   borde: borde nítido + sombra difusa a la vez da la "tarjeta fantasma".
+   Sombras tintadas con la tinta de marca, nunca negras ni grises. */
+:root {
+  /* Aquí vivía --sombra-menu, heredada del sitio hermano para un desplegable que
+     esta cabecera decidió no tener (ver Cabecera.astro: con cinco destinos cabe
+     una fila y no hace falta esconderlos). No lo usaba nadie. Un token muerto no
+     da error, solo hace creer que existe una pieza que no existe. */
+  --sombra-dialogo: 0 2px 6px rgba(41, 50, 55, .10), 0 24px 60px rgba(41, 50, 55, .26);
+  /* El botón de subir. Existe como token porque estaba escrito a mano en
+     SubirArriba.astro y —peor— tintado con rgba(18,41,74), que es el AZUL
+     MARINO DEL SITIO HERMANO: el componente se copió y se trajo la sombra de
+     otra clínica puesta. La regla de §4 es que la sombra va tintada con la
+     tinta de CIMO, nunca negra y nunca de nadie más. */
+  --sombra-flotante: 0 2px 4px rgba(41, 50, 55, .10), 0 14px 34px rgba(41, 50, 55, .20);
+  --velo-dialogo: rgba(24, 32, 37, .6);
+  /* neutra oscura, no verde: un objeto verde bajo luz blanca proyecta sombra gris */
+  --sombra-whatsapp: 0 6px 18px rgba(20, 40, 30, .22);
+}
+
+/* ═══════════════════════════════════════════════════════════════ 6. BASE */
+
+*, *::before, *::after { box-sizing: border-box }
+
+html { scroll-padding-top: calc(var(--cabecera-alto) + var(--s-2)) }
+
+body {
+  margin: 0;
+  background: var(--base);
+  color: var(--text-body);
+  font-family: var(--font);
+  font-size: var(--step-0);
+  line-height: var(--lh-cuerpo);
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-titulo);
+  font-weight: var(--peso-titulo);
+  color: var(--ink);
+  line-height: var(--lh-titular);
+  letter-spacing: var(--track-titular);
+  margin: 0;
+}
+h1 { font-size: var(--step-5) }
+h2 { font-size: var(--step-4) }
+h3 { font-size: var(--step-3) }
+
+/* LA FIRMA DEL SISTEMA. El logo lleva un degradado de pizarra a azul a lo largo
+   del wordmark; medido glifo a glifo: C #171E23 → I #364346 → M #7FA6B6 → O #81A4B2.
+   Aquí eso se dice partiendo el titular en dos voces en vez de con un degradado
+   literal, que no tendría color computado que auditar.
+
+   El <em> dentro de un titular NO es énfasis: es la firma. Se autora siempre a
+   través de Titular.astro, nunca a mano. En el cuerpo, <em> sigue siendo cursiva. */
+h1 em, h2 em, h3 em, .firma {
+  font-family: var(--font-firma);
+  font-style: normal;
+  font-weight: 400;
+  color: var(--firma-color);
+  letter-spacing: var(--track-firma);
+  line-height: var(--lh-firma);
+}
+h1 em { font-size: calc(var(--step-5) * var(--firma-escala)) }
+h2 em { font-size: calc(var(--step-4) * var(--firma-escala)) }
+h3 em { font-size: calc(var(--step-3) * var(--firma-escala)) }
+
+p { margin: 0; max-width: var(--measure) }
+
+a { color: var(--marca-text); text-decoration: none; border-bottom: 1px solid var(--line) }
+a:hover { color: var(--ink); border-bottom-color: var(--marca-text) }
+
+/* El rótulo de sección. Era el único sitio donde vivía el oro; desde septiembre
+   de 2026 también viste los rótulos de los campos del diálogo de cita. El papel
+   no cambió —sigue marcando rótulos—, solo el alcance. DESIGN.md §"El oro". */
+.versalita {
+  font-family: var(--font-datos);
+  font-size: var(--step--2);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--track-versalita);
+  text-transform: uppercase;
+  color: var(--text-seccion);
+}
+
+/* LO QUE NO DIBUJAMOS TAMBIÉN ES LA MARCA. El cursor de texto, la barra de
+   desplazamiento, el color de acento de los controles nativos y el subrayado de
+   los enlaces vienen por defecto del navegador y no pertenecen a ningún sistema
+   de diseño. Es lo más barato de arreglar y lo primero que delata una página
+   montada en vez de construida. */
+:focus-visible { outline: 2px solid var(--marca-text); outline-offset: 2px }
+::selection { background: var(--marca-suave); color: var(--ink) }
+
+html {
+  caret-color: var(--marca-text);
+  accent-color: var(--marca-text);          /* select, checkbox, radio nativos */
+  scrollbar-color: var(--line) transparent;
+}
+a { text-underline-offset: 0.18em; text-decoration-thickness: 1px }
+
+/* Cifras de ancho fijo donde forman columna: los horarios se leen como tabla y
+   con cifras proporcionales las horas no alinean entre filas. */
+.horario, .cal, table { font-variant-numeric: tabular-nums }
+
+img { max-width: 100%; height: auto }
+
+.contenedor { max-width: var(--container); margin-inline: auto; padding-inline: var(--s-3) }
+.seccion { padding-block: var(--s-5) }
+
+/* LA BANDA OSCURA: una sola definición del material, usada por todas.
+   Vivía copiada en .promesa, en .franja y en el pie, y una copia de más es la
+   vía por la que tres superficies que deben ser la misma se separan — pasó ya
+   con --sombra-flotante, que llegó tintada con el azul de OTRA clínica.
+
+   Cuatro capas, de arriba abajo:
+     1. el velo, que protege la columna de texto (ver §2)
+     2. la trama de figuras, medida de la lámina de Haikei
+     3. el degradado oscuro, cuyos dos extremos pasan contraste por separado
+     4. --ink sólido debajo de todo, para que si alguna capa no pinta el texto
+        claro no acabe sobre blanco. El atajo `background` deja el color en
+        transparente, así que va SIEMPRE por su nombre largo. */
+.banda-oscura {
+  background-color: var(--ink);
+  background-image:
+    var(--velo-trama),
+    var(--trama-circulos),
+    var(--degradado-oscuro);
+  background-size: auto, var(--trama-figuras-paso), auto;
+  background-repeat: no-repeat, repeat, no-repeat;
+}
+/* Al apilarse en una columna el texto deja de estar a la izquierda y pasa a
+   estar arriba, así que el velo gira con él. */
+@media (max-width: 60rem) {
+  .banda-oscura { --velo-angulo: 180deg }
+}
+.oculto {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════ 6b. MOVIMIENTO */
+/*
+   UN SOLO MOMENTO, no efectos sueltos por toda la página: la firma se ESCRIBE.
+   Allison es una caligrafía, o sea la letra de una mano; revelarla de izquierda
+   a derecha con un barrido es literalmente lo que hace una mano al firmar. Es
+   el gesto más propio que este sitio puede hacer y es el único que se permite
+   llamar la atención. Todo lo demás sube medio centímetro y se queda quieto.
+
+   Las animaciones de entrada son CSS, no JavaScript, y usan `both`: terminan
+   siempre en el estado final aunque nada más se ejecute. El reparto por
+   palabras es una MEJORA encima, no un requisito.
+*/
+@keyframes surgir {
+  from { opacity: 0; transform: translateY(.45em) }
+  to   { opacity: 1; transform: none }
+}
+/* Los insets negativos arriba y abajo dejan pasar los rasgos altos y bajos de
+   la script, que se salen de su propia caja. Sin ellos la firma sale decapitada. */
+@keyframes escribir {
+  from { clip-path: inset(-30% 100% -30% -2%) }
+  to   { clip-path: inset(-30% -8% -30% -2%) }
+}
+@keyframes aparecer { from { opacity: 0 } to { opacity: 1 } }
+
+/* El titular con h1 entra al cargar: está sobre el pliegue, nadie lo desplaza. */
+.titular:has(h1) .versalita { animation: surgir .5s var(--ease) both }
+h1 .frase { animation: surgir .55s var(--ease) .07s both }
+h1 .frase .pal { animation: surgir .5s var(--ease) calc(.07s + var(--i, 0) * .06s) both }
+h1 em { animation: escribir .95s var(--ease) .42s both }
+
+/* Cuando el script reparte la frase en palabras, la frase entera deja de
+   animarse: si no, se animarían las dos capas y el resultado va a saltos. */
+h1 .frase.repartida { animation: none; opacity: 1 }
+
+/* Lo demás del héroe entra detrás de la firma, escalonado. */
+.entrada { animation: surgir .55s var(--ease) both }
+.entrada-1 { animation-delay: .30s }
+.entrada-2 { animation-delay: .40s }
+.entrada-3 { animation-delay: .50s }
+
+/* Secciones: se revelan al entrar en pantalla. Solo se esconden si hay
+   JavaScript Y el observador llegó a montarse; si algo falla, `revelar` se
+   quita del <html> y todo queda visible. */
+/* Solo se revelan los TITULARES de sección, no cada tarjeta y cada párrafo. Una
+   entrada idéntica repetida en todo lo que aparece deja de leerse como
+   intención y empieza a leerse como plantilla. Y al revelarse, su firma vuelve
+   a escribirse: es el mismo gesto de la portada repitiéndose donde le toca, no
+   un efecto distinto en cada sitio. */
+html.revelar .revelable { opacity: 0 }
+html.revelar .revelable.visto { animation: surgir .6s var(--ease) both }
+html.revelar .revelable.visto em { animation: escribir .85s var(--ease) .22s both }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ══════════════════════════════════ 7. CITA: BOTÓN O TELÉFONO, NUNCA LOS DOS */
+/* El botón de cita abre un <dialog>; sin él no hace nada. La clase `js` la pone
+   el layout ANTES del primer pintado comprobando HTMLDialogElement, así que no
+   hay salto de maquetación entre uno y otro. */
+html:not(.js) [data-abrir-cita] { display: none !important }
+html.js [data-cita-tel] { display: none !important }

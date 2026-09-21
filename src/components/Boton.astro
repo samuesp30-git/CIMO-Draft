@@ -1,0 +1,113 @@
+---
+// Botón. Emite <a> si recibe href, <button> si no.
+//
+// La variante por defecto es `cta`: --ink sólido sobre blanco, 13.08:1. Con una
+// paleta de un solo tono, la acción principal se separa por VALOR y no por
+// color, y a ese contraste no le hace falta ayuda.
+//
+// `marca` usa el azul del logo COMO RELLENO, con el texto en --ink encima. El
+// azul de marca da 2.20:1 sobre blanco: rellena, no escribe. Es el error más
+// probable del proyecto y por eso está dicho aquí y comprobado en verificar.mjs.
+
+interface Props {
+  variante?: 'cta' | 'marca' | 'contorno' | 'texto' | 'whatsapp' | 'claro' | 'contorno-claro';
+  tamano?: 'sm' | 'md' | 'lg';
+  /** Radio de píldora. SOLO el CTA principal; si todo es píldora deja de leerse. */
+  pildora?: boolean;
+  href?: string;
+  externo?: boolean;
+  type?: 'button' | 'submit';
+  deshabilitado?: boolean;
+  class?: string;
+  [key: string]: any;
+}
+const {
+  variante = 'cta', tamano = 'md', pildora, href, externo,
+  type = 'button', deshabilitado, class: clase, ...resto
+} = Astro.props;
+
+const Etiqueta = href ? 'a' : 'button';
+const attrs: Record<string, any> = href
+  ? { href, ...(externo ? { target: '_blank', rel: 'noopener noreferrer' } : {}) }
+  : { type, disabled: deshabilitado };
+---
+
+<Etiqueta class:list={['btn', variante, tamano, { pildora }, clase]} {...attrs} {...resto}>
+  <slot />
+</Etiqueta>
+
+<style>
+  .btn {
+    font-family: var(--font-datos);
+    font-size: var(--step--1);
+    font-weight: 500;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-1);
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+  }
+  .pildora { border-radius: var(--radius-chip) }
+
+  /* 2.75rem incluso en el tamaño pequeño: `sm` es el que lleva el CTA de la
+     cabecera, que es el control más importante del sitio y estaba en 33 px de
+     alto, en lo más alto de la pantalla, que es justo donde peor llega un
+     pulgar. El mínimo AA (WCAG 2.5.8) son 24 px y sí los cumplía; esto es
+     comodidad de uso, no conformidad. */
+  .sm { padding: 0.5rem 0.875rem; min-height: 2.75rem }
+  .md { padding: 0.75rem 1.25rem }
+  .lg { padding: 0.9375rem 1.75rem; font-size: var(--step-0) }
+
+  .cta { background: var(--cta-fondo); color: var(--cta-text); border-color: var(--cta-fondo) }
+  .cta:hover { background: var(--cta-fondo-hover); border-color: var(--cta-fondo-hover) }
+
+  /* el azul RELLENA; el texto encima va en tinta */
+  .marca { background: var(--relleno-marca); color: var(--ink); border-color: var(--relleno-marca) }
+  .marca:hover { background: var(--relleno-marca-hover); border-color: var(--relleno-marca-hover) }
+
+  /* Mismo razonamiento que .btn-borde del dialogo: el contorno de un control
+     se dibuja con --marca-text (5.70:1 sobre blanco), no con --line (1.27:1),
+     que es el token para separar superficies y no para delinear botones. */
+  .contorno { background: transparent; color: var(--ink); border-color: var(--marca-text) }
+  .contorno:hover { border-color: var(--ink); background: var(--marca-tenue) }
+
+  /* LAS DOS VARIANTES PARA FONDO OSCURO. El sistema no las tenía porque la única
+     franja oscura que existía se resolvía con `marca`, que rellena de azul. Una
+     portada fotográfica necesita otra cosa: sobre una foto, el azul de marca
+     compite con la imagen y el botón deja de leerse como el control principal.
+
+     `claro` invierte el CTA: blanco sólido con tinta encima, 13.08:1, el mismo
+     par que `cta` pero al revés. Sobre una foto oscura es el elemento más
+     brillante de la pantalla, que es exactamente lo que debe ser el botón de
+     pedir cita.
+
+     `contorno-claro` es el secundario. El borde blanco da 6.92:1 contra el velo
+     en su punto más claro bajo el texto, así que cumple también el 3:1 que WCAG
+     1.4.11 pide para el contorno de un control, no solo para su texto. */
+  .claro { background: var(--base); color: var(--ink); border-color: var(--base) }
+  .claro:hover { background: var(--marca-suave); border-color: var(--marca-suave) }
+
+  .contorno-claro { background: transparent; color: var(--base); border-color: rgba(255, 255, 255, .55) }
+  .contorno-claro:hover { border-color: var(--base); background: rgba(255, 255, 255, .10) }
+
+  .texto { background: transparent; color: var(--marca-text); border-color: transparent; padding: 0.375rem 0 }
+  .texto:hover { color: var(--ink) }
+
+  .whatsapp { background: var(--whatsapp); color: var(--ink); border-color: var(--whatsapp) }
+  .whatsapp:hover { background: var(--whatsapp-oscuro); border-color: var(--whatsapp-oscuro) }
+
+  /* Los controles inhabilitados están exentos de WCAG 1.4.3 a propósito: el bajo
+     contraste ES la señal de que no se pueden usar. No se "arregla". */
+  .btn:disabled {
+    background: var(--surface); color: var(--desactivado);
+    border-color: var(--line); cursor: not-allowed;
+  }
+
+  /* a[] no hereda el reset de enlaces del sitio */
+  a.btn { border-bottom-width: 1px }
+  a.btn:hover { border-bottom-color: inherit }
+</style>

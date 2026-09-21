@@ -1,0 +1,109 @@
+---
+import clinica from '../data/clinica.json';
+import Boton from './Boton.astro';
+
+// «Cómo llegar» y «Compartir», juntos, porque los usa la misma persona seguidos:
+// mira dónde está y se lo pasa a quien lo lleva.
+//
+// EL ORO NO SE USA AQUÍ aunque el diseño de referencia pinte de dorado el botón
+// de «Cómo llegar». En este sistema el oro tiene UN rol —los rótulos de sección—
+// y en cuanto rellena un botón deja de significar eso. La acción principal se
+// separa por valor, con --ink sólido, que es como se separa en todo el sitio.
+//
+// «Compartir» no abre una red: llama al menú del propio sistema, que ofrece
+// WhatsApp, mensajes o correo según lo que el visitante tenga instalado. Donde
+// no exista —escritorio, casi siempre— copia la dirección al portapapeles.
+
+interface Props { class?: string }
+const { class: clase } = Astro.props;
+
+const sede = clinica.sedes[0];
+const { direccion, coordenadas } = sede;
+
+const consulta = coordenadas ? `${coordenadas.lat},${coordenadas.lng}` : direccion.consulta;
+const comoLlegar = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(consulta)}`;
+const verGrande = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consulta)}`;
+---
+
+<div
+  class:list={['acciones', clase]}
+  data-acciones-mapa
+  data-direccion={direccion.completa}
+  data-nombre={clinica.nombreCompleto}
+  data-enlace={verGrande}
+>
+  <div class="fila">
+    <Boton variante="cta" href={comoLlegar} externo>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+        <path d="M12 2a7 7 0 0 0-7 7c0 5.2 6.3 12.4 6.6 12.7.2.2.6.2.8 0C12.7 21.4 19 14.2 19 9a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"></path>
+      </svg>
+      Cómo llegar
+    </Boton>
+
+    <Boton variante="contorno" data-compartir>
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <path d="M18 8a2.5 2.5 0 1 0-2.45-3L8.9 8.6a2.5 2.5 0 1 0 0 6.8l6.65 3.6A2.5 2.5 0 1 0 18 16a2.5 2.5 0 0 0-1.7.67L9.9 13.1a2.5 2.5 0 0 0 0-2.2l6.4-3.57A2.5 2.5 0 0 0 18 8Z" fill="currentColor"></path>
+      </svg>
+      <span data-etiqueta>Compartir</span>
+    </Boton>
+  </div>
+
+  {/* role="status" y no un texto suelto: el resultado de copiar también tiene
+      que llegarle a quien no ve aparecer la frase. Y el hueco está reservado
+      desde el principio, para que al copiar no empuje lo de abajo justo cuando
+      el visitante está mirando. */}
+  <p class="aviso" data-aviso role="status"></p>
+</div>
+
+<style>
+  .fila { display: flex; flex-wrap: wrap; gap: var(--s-1) }
+  .fila :global(svg) { flex: none }
+  .aviso {
+    margin: var(--s-1) 0 0;
+    min-height: 1.25rem;
+    font-family: var(--font-datos);
+    font-size: var(--step--1);
+    color: var(--text-marca);
+  }
+</style>
+
+<script>
+  // Sin imports: Astro deja de incrustar un script en cuanto los tiene, y este
+  // sitio abre desde file://. Ver la nota de astro.config.mjs.
+  for (const raiz of document.querySelectorAll<HTMLElement>('[data-acciones-mapa]')) {
+    const boton = raiz.querySelector<HTMLButtonElement>('[data-compartir]');
+    const aviso = raiz.querySelector<HTMLElement>('[data-aviso]');
+    if (!boton) continue;
+
+    const nombre = raiz.dataset.nombre ?? '';
+    const enlace = raiz.dataset.enlace ?? '';
+    const texto = `${nombre}\n${raiz.dataset.direccion ?? ''}\n${enlace}`;
+
+    const decir = (m: string) => {
+      if (!aviso) return;
+      aviso.textContent = m;
+      setTimeout(() => (aviso.textContent = ''), 4000);
+    };
+
+    boton.addEventListener('click', async () => {
+      // El menú nativo donde exista: manda la dirección por WhatsApp, mensajes o
+      // correo con un toque. Es el camino bueno en móvil, que es donde de verdad
+      // se comparte una dirección.
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: nombre, text: texto, url: enlace });
+          return;
+        } catch (e) {
+          // Cancelar no es fallar: si cierra el menú, no hay nada que anunciar.
+          if ((e as Error)?.name === 'AbortError') return;
+        }
+      }
+      try {
+        await navigator.clipboard.writeText(texto);
+        decir('Dirección copiada.');
+      } catch {
+        decir('No se pudo copiar. La dirección está aquí al lado.');
+      }
+    });
+  }
+</script>

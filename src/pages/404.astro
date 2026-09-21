@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import Titular from '../components/Titular.astro';
+import Boton from '../components/Boton.astro';
+import clinica from '../data/clinica.json';
+import { enlaceWhatsApp } from '../lib/whatsapp';
+
+const wa = enlaceWhatsApp(clinica.whatsapp.numero, clinica.whatsapp.plantillas.general);
+---
+
+<Base titulo="Página no encontrada" descripcion="La página que buscabas no existe. Vuelve al inicio o escríbenos por WhatsApp.">
+  <div class="contenedor caja">
+    <Titular nivel={1} previo="Error 404" resalte="no existe">Esta página</Titular>
+    <p>
+      Puede que el enlace esté mal escrito o que la página haya cambiado de
+      sitio. Desde el inicio llegas a todo lo demás.
+    </p>
+    <div class="acciones">
+      <Boton variante="cta" pildora href="index.html">Ir al inicio</Boton>
+      <Boton variante="contorno" href={wa} externo data-wa-contacto>Escribir por WhatsApp</Boton>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .caja { padding-block: var(--s-6); display: grid; gap: var(--s-3); justify-items: start }
+  .acciones { display: flex; gap: var(--s-2); flex-wrap: wrap }
+</style>

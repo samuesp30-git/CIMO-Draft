@@ -1,0 +1,192 @@
+---
+import '../styles/tokens.css';
+import clinica from '../data/clinica.json';
+import BarraHorario from '../components/BarraHorario.astro';
+import Cabecera from '../components/Cabecera.astro';
+import Pie from '../components/Pie.astro';
+import WhatsAppFlotante from '../components/WhatsAppFlotante.astro';
+import SubirArriba from '../components/SubirArriba.astro';
+import DatosEstructurados from '../components/DatosEstructurados.astro';
+import AgendarCita from '../components/AgendarCita.astro';
+import ChatCIMO from '../components/ChatCIMO.astro';
+
+interface Props {
+  titulo: string;
+  descripcion: string;
+  /** Página actual, para marcar la navegación. */
+  actual?: string;
+}
+const { titulo, descripcion, actual } = Astro.props;
+
+const tituloCompleto = `${titulo} | ${clinica.nombre}`;
+const sede = clinica.sedes[0];
+
+// El sitio se sirve desde file:// mientras se le enseña al cliente, así que la
+// URL canónica se declara apuntando al dominio previsto: es lo que leerá un
+// buscador cuando se publique, y no afecta a la demo local.
+const dominio = 'https://cimo.hn/';
+const archivo = Astro.url.pathname.replace(/^\//, '') || 'index.html';
+const urlCanonica = dominio + (archivo === 'index.html' ? '' : archivo);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* Marca el documento ANTES del primer pintado. Los botones de «Agendar
+        cita» abren un <dialog>, así que sin él no pueden hacer nada: en su lugar
+        se muestra un enlace tel: gemelo. Si esto se decidiera desde el script
+        del final, el visitante vería primero el teléfono y luego el botón, con
+        su salto de maquetación. Se comprueba <dialog>, que es lo que hace falta
+        de verdad, no solo que haya JavaScript. */}
+    {/* `local` marca la demo por USB. El chat con IA necesita un backend, así
+        que desde file:// no puede funcionar y se retira. Su propio script ya lo
+        quita, pero ese es `type="module"` y los módulos van DIFERIDOS: se
+        ejecutan después del primer pintado, o sea que la burbuja se vería un
+        instante antes de desaparecer. Aquí, antes de pintar, no parpadea. */}
+    <script is:inline>
+      if (typeof HTMLDialogElement === 'function') document.documentElement.classList.add('js');
+      if (location.protocol === 'file:') document.documentElement.classList.add('local');
+    </script>
+
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+
+    {/* Rutas relativas en todo: el sitio debe abrir desde file:// sin servidor */}
+    <link rel="icon" href="img/favicon.png" type="image/png" />
+    <link rel="canonical" href={urlCanonica} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={clinica.nombreCompleto} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={urlCanonica} />
+    <meta property="og:locale" content="es_HN" />
+    {/* PENDIENTE: la tarjeta de compartir necesita 1200×630 y hoy no hay
+        fotografía ni logo vectorial. Hasta entonces no se declara og:image:
+        mejor sin vista previa que con una imagen estirada de 150 px. */}
+
+    <meta name="theme-color" content="#293237" />
+    <meta name="geo.region" content="HN-FM" />
+    <meta name="geo.placename" content={sede.direccion.ciudad} />
+
+    <DatosEstructurados url={urlCanonica} />
+
+    {/* Solo las caras que aparecen sobre el pliegue. Tinos primero: es el
+        titular. La firma va tercera porque vive dentro del h1 y un cambio de
+        script a cursiva de reserva se nota muchísimo. */}
+    <link rel="preload" href="fonts/tinos-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/firma-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
+
+  <body>
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+    <BarraHorario />
+    <Cabecera actual={actual} />
+    <main id="contenido"><slot /></main>
+    <Pie />
+    <WhatsAppFlotante />
+    <SubirArriba />
+    <AgendarCita />
+    {/* Abajo a la IZQUIERDA. El rincón derecho ya está ocupado por los dos
+        flotantes de arriba, con su aritmética hecha a mano; el propio
+        componente explica por qué no se mete ahí. */}
+    <ChatCIMO />
+
+    {/* Movimiento. is:inline y colocado aquí a propósito: corre durante el
+        análisis del documento, así que reparte las palabras del h1 ANTES del
+        primer pintado y no hay parpadeo.
+
+        Regla de seguridad: la clase `revelar` la pone este script, no el HTML.
+        Si el script no llega a ejecutarse —o revienta— nadie esconde nada y la
+        página se lee entera. Esconder primero con CSS y confiar en que después
+        venga alguien a revelar es cómo se queda un sitio en blanco. */}
+    <script is:inline>
+      (function () {
+        // Quien pide menos movimiento no recibe ninguno: ni reparto de palabras
+        // ni observador. El @media de tokens.css ya neutraliza las duraciones,
+        // pero esto además se ahorra el trabajo.
+        var quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (quieto) return;
+
+        try {
+          // Reparto por palabras SOLO del h1: es el único titular que entra al
+          // cargar. Los h2 se revelan enteros al desplazar, que a ese tamaño
+          // es más limpio que una cascada de palabras.
+          var frase = document.querySelector('h1 .frase');
+          if (frase && frase.childElementCount === 0) {
+            var palabras = frase.textContent.trim().split(/\s+/);
+            frase.textContent = '';
+            for (var i = 0; i < palabras.length; i++) {
+              var s = document.createElement('span');
+              s.className = 'pal';
+              s.style.setProperty('--i', i);
+              s.textContent = palabras[i];
+              frase.appendChild(s);
+              if (i < palabras.length - 1) frase.appendChild(document.createTextNode(' '));
+            }
+            frase.classList.add('repartida');
+          }
+        } catch (e) { /* el titular se queda entero y animado como bloque */ }
+
+        var pendientes = [].slice.call(document.querySelectorAll('.revelable'));
+        if (!pendientes.length) return;
+        if (typeof requestAnimationFrame !== 'function') return;
+
+        // NO se usa IntersectionObserver, y no por gusto. Solo avisa cuando
+        // CAMBIA el estado de intersección, y una sección que pasa de estar
+        // debajo de la ventana a estar encima —un enlace a un ancla, una rueda
+        // rápida, Fin en el teclado— nunca llega a intersecar: los dos estados
+        // son «fuera», no hay cambio, no hay aviso, y la sección se queda a
+        // opacidad 0 para siempre. Comprobado, no supuesto.
+        //
+        // Con tres elementos por página, medir la posición en cada fotograma de
+        // desplazamiento cuesta nada y no tiene ese punto ciego: `top < 88 % de
+        // la ventana` cubre a la vez «va entrando» y «ya pasó de largo».
+        document.documentElement.classList.add('revelar');
+
+        var pedido = false;
+        function comprobar() {
+          pedido = false;
+          var alto = window.innerHeight || document.documentElement.clientHeight;
+          for (var i = pendientes.length - 1; i >= 0; i--) {
+            if (pendientes[i].getBoundingClientRect().top < alto * 0.88) {
+              pendientes[i].classList.add('visto');
+              pendientes.splice(i, 1);
+            }
+          }
+          if (!pendientes.length) {
+            removeEventListener('scroll', pedir);
+            removeEventListener('resize', pedir);
+          }
+        }
+        function pedir() { if (!pedido) { pedido = true; requestAnimationFrame(comprobar); } }
+
+        addEventListener('scroll', pedir, { passive: true });
+        addEventListener('resize', pedir, { passive: true });
+        comprobar();   // lo que ya esté a la vista al cargar entra de una vez
+      })();
+    </script>
+
+    <style>
+      .saltar {
+        position: absolute;
+        left: var(--s-2);
+        top: -4rem;
+        z-index: 100;
+        background: var(--ink);
+        color: var(--base);
+        padding: var(--s-1) var(--s-2);
+        border-radius: var(--radius);
+        border: 0;
+        font-family: var(--font-datos);
+        font-size: var(--step--1);
+        transition: top .15s ease;
+      }
+      .saltar:focus { top: var(--s-2) }
+    </style>
+  </body>
+</html>

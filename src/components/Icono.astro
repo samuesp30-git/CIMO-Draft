@@ -1,0 +1,39 @@
+---
+import { ICONOS } from '../lib/iconos';
+
+interface Props {
+  nombre: string;
+  tamano?: number;
+  /** Etiqueta accesible. Sin ella el icono es decorativo y se oculta. */
+  titulo?: string;
+  class?: string;
+}
+
+const { nombre, tamano = 24, titulo, class: clase } = Astro.props;
+
+const cuerpo = ICONOS[nombre];
+// Falla en la compilación, no en la página: un icono que no existe saldría como
+// un hueco silencioso y nadie lo vería hasta que lo viera el cliente.
+if (!cuerpo) throw new Error(`Icono desconocido: "${nombre}". Los que hay: ${Object.keys(ICONOS).join(', ')}`);
+
+// El trazo se ajusta al tamaño. A 20 px un trazo de 1.75 se aclara y el icono
+// pierde peso al lado del texto; a 48 px un trazo de 2 lo engorda. Es la misma
+// corrección óptica que hace una tipografía entre cuerpo y titular.
+const trazo = tamano <= 22 ? 2 : tamano <= 30 ? 1.9 : 1.75;
+---
+
+<svg
+  class={clase}
+  viewBox="0 0 24 24"
+  width={tamano}
+  height={tamano}
+  fill="none"
+  stroke="currentColor"
+  stroke-width={trazo}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  role={titulo ? 'img' : undefined}
+  aria-label={titulo}
+  aria-hidden={titulo ? undefined : 'true'}
+  set:html={cuerpo}
+/>

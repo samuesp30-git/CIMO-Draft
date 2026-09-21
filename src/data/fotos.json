@@ -1,0 +1,101 @@
+[
+  {
+    "id": "portada-cielo",
+    "original": "sonrisa-cielo.jpg",
+    "alt": "Primer plano de una persona sonriendo al aire libre",
+    "tratamiento": "suave",
+    "encuadre": "left",
+    "encuadreAlto": "centre",
+    "fuente": "IA",
+    "licencia": "Generada con IA por el cliente (Gemini / ChatGPT). Los terminos de ambos servicios ceden al usuario los derechos sobre la salida, asi que el uso comercial no plantea problema de licencia.",
+    "url": "",
+    "nota": "GENERADA CON IA por el cliente. No es una fotografia de CIMO, ni de un paciente, ni de un resultado real, y NO PUEDE presentarse como tal: ni junto a un antes/despues, ni a un testimonio, ni con un pie que insinue que es alguien atendido aqui. Como portada es una imagen de TEMA —una sonrisa—, igual que una de banco. La fotografia real de la clinica sigue pendiente."
+  },
+  {
+    "id": "portada-sonrisa-bn",
+    "original": "s2.jpg",
+    "alt": "Primer plano de una persona sonriendo",
+    "tratamiento": "bn",
+    "fuente": "Unsplash",
+    "licencia": "Licencia Unsplash — uso comercial libre, sin atribución obligatoria",
+    "url": "https://unsplash.com/photos/1562337404-3044c84ac061",
+    "nota": "Primer plano. NO es una fotografía de CIMO ni de un paciente de CIMO: habla del tratamiento, no de la sede. La fotografía real sigue pendiente en pendientes.json.",
+    "encuadre": "north",
+    "encuadreAlto": "centre"
+  },
+  {
+    "id": "portada-sonrisa",
+    "original": "s1.jpg",
+    "alt": "Primer plano de una persona sonriendo",
+    "tratamiento": "apagado",
+    "fuente": "Unsplash",
+    "licencia": "Licencia Unsplash — uso comercial libre, sin atribución obligatoria",
+    "url": "https://unsplash.com/photos/1489278353717-f64c6ee8a4d2",
+    "nota": "Primer plano. NO es una fotografía de CIMO ni de un paciente de CIMO.",
+    "encuadre": "centre",
+    "encuadreAlto": "east"
+  },
+  {
+    "id": "portada-textura",
+    "original": "a4.jpg",
+    "alt": "",
+    "tratamiento": "apagado",
+    "fuente": "Unsplash",
+    "licencia": "Licencia Unsplash — uso comercial libre, sin atribución obligatoria",
+    "url": "https://unsplash.com/photos/1587301552314-4dabb468fdd5",
+    "nota": "Textura abstracta. No afirma absolutamente nada; es la opción que no puede malinterpretarse. alt vacío porque es decorativa.",
+    "encuadre": "centre",
+    "encuadreAlto": "centre"
+  },
+  {
+    "id": "simbolos-lamina",
+    "original": "simbolos-lamina.jpg",
+    "uso": "iconos",
+    "recortes": [
+      "invisible",
+      "brackets",
+      "higiene",
+      "ninos",
+      "estetica"
+    ],
+    "alt": "",
+    "tratamiento": "ninguno",
+    "fuente": "IA",
+    "licencia": "Generada con IA por el cliente. Los terminos del servicio ceden al usuario los derechos sobre la salida, asi que el uso comercial no plantea problema de licencia.",
+    "url": "",
+    "nota": "GENERADA CON IA por el cliente. Lamina 4x3 de iconos de linea de la que se recortan los de especialidad (scripts/iconos-simbolos.mjs). NO es fotografia de CIMO ni afirma nada sobre la clinica. Viene con trazo celeste sobre azul marino: el script usa el brillo como alfa y lo tine con --marca-text, porque el celeste sobre blanco da 2.2:1 y no puede escribir. De los doce solo se extraen CINCO, los que casan con un servicio real; los otros siete son especialidades que ninguna fuente atribuye a CIMO. Sustituye a la lamina anterior de discos 3D, que a 30px dejaba de distinguirse."
+  },
+  {
+    "id": "haikei-circulos",
+    "original": "haikei-circulos.png",
+    "uso": "trama",
+    "alt": "",
+    "tratamiento": "ninguno",
+    "fuente": "Haikei",
+    "licencia": "Generada por el cliente con haikei.co. El generador entrega SVG/PNG de libre uso, incluido el comercial; no hay material de terceros dentro porque la figura es geometria pura.",
+    "url": "https://haikei.co/",
+    "nota": "NO se publica este PNG. scripts/tramas.mjs mide la geometria de las 22 circunferencias y las reescribe como SVG incrustado en src/styles/tramas.css, para que la trama sea nitida a cualquier ancho y no pese un archivo. La lamina ya venia en paleta: fondo #293237 y trazo #6EB8DD son exactamente --ink y --marca. No afirma nada sobre la clinica: es geometria."
+  },
+  {
+    "id": "haikei-hexagonos",
+    "original": "haikei-hexagonos.png",
+    "uso": "trama",
+    "alt": "",
+    "tratamiento": "ninguno",
+    "fuente": "Haikei",
+    "licencia": "Generada por el cliente con haikei.co. Mismo caso que haikei-circulos.",
+    "url": "https://haikei.co/",
+    "nota": "GENERADA y medida igual que haikei-circulos, pero HOY NO SE USA EN NINGUNA PAGINA. El token --trama-hexagonos existe y esta listo; se dejo fuera porque el hexagono contradice una regla escrita del sistema: el logo es una insignia circular y por eso los radios son de 10px y no de 4. Se conserva para poder comparar sin volver a generar nada."
+  },
+  {
+    "id": "lavado",
+    "original": "haikei-degradado.png",
+    "uso": "fondo",
+    "alt": "",
+    "tratamiento": "aclarado",
+    "fuente": "Haikei",
+    "licencia": "Generada por el cliente con haikei.co. Degradado difuso, sin material de terceros.",
+    "url": "https://haikei.co/",
+    "nota": "Se publica como public/img/lavado.webp (0.8 KB) y se usa de fondo en la cabecera de servicios, SOLO desde CSS. El original NO servia: su punto mas oscuro, #ABD6EE, dejaba a --oro-text en 3.54:1. scripts/tramas.mjs lo mezcla un 68% hacia blanco hasta que el pixel mas oscuro de toda la lamina da 4.75:1 contra el token mas debil, que es el suelo que el sistema ya acepta. No afirma nada sobre la clinica: es un degradado."
+  }
+]

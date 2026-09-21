@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<title>Paquetes de sitio web</title>
+<style>
+  /* Documento GENERICO: se le manda a cualquier cliente, no a uno concreto.
+     El unico nombre propio es el del VENDEDOR en la cabecera; nada de rubros,
+     nada del negocio del cliente. Si algun dia se personaliza para uno, se
+     copia el archivo — no se edita este.
+
+     Jost va en DOS CARAS ESTATICAS, no en la variable: Chrome imprime a PDF sin
+     incrustar fuentes variables, y el fallo es callado —el PDF sale igual de
+     bien y todo el texto de datos cae a la fuente del sistema sin avisar. Se
+     generan con `node propuesta/fijar-jost.mjs`. */
+  @font-face { font-family: 'Tinos'; src: url('fonts/tinos-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: block }
+  @font-face { font-family: 'Tinos'; src: url('fonts/tinos-latin-400-italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: block }
+  @font-face { font-family: 'Tinos'; src: url('fonts/tinos-latin-700-normal.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: block }
+  @font-face { font-family: 'Jost'; src: url('fonts/jost-400-estatica.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: block }
+  @font-face { font-family: 'Jost'; src: url('fonts/jost-500-estatica.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: block }
+
+  :root {
+    --ink: #293237; --ink-soft: #4F6069; --ink-faint: #586973;
+    --marca-text: #2A6D8F; --marca-suave: #DFEEF6; --marca-tenue: #F4F9FB;
+    --oro-text: #8A6212; --line: #DAE6EC; --base: #fff;
+    --serif: 'Tinos', 'Times New Roman', serif;
+    --datos: 'Jost', system-ui, sans-serif;
+  }
+
+  @page { size: A4; margin: 15mm 16mm 14mm }
+  * { box-sizing: border-box }
+  body {
+    margin: 0; background: var(--base); color: var(--ink);
+    font: 400 10.6pt/1.5 var(--serif);
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  h1, h2, h3 { margin: 0; font-weight: 400; line-height: 1.15 }
+  p { margin: 0 0 .5em }
+  ul { margin: 0; padding-left: 1.05em }
+  li { margin-bottom: .34em }
+  strong, b { font-weight: 700 }
+
+  /* Rotulo dorado: el UNICO papel que tiene el oro en este sistema. */
+  .rotulo {
+    font: 500 7.6pt/1 var(--datos); letter-spacing: .13em; text-transform: uppercase;
+    color: var(--oro-text); margin: 0 0 6px;
+  }
+
+  /* ---------- cabecera ---------- */
+  .cabecera { display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 1.5px solid var(--ink); padding-bottom: 11px; margin-bottom: 20px }
+  .cabecera h1 { font-size: 27pt; letter-spacing: -.01em }
+  .cabecera h1 em { font-style: italic; color: var(--marca-text) }
+  .de { text-align: right; font: 400 8.6pt/1.5 var(--datos); color: var(--ink-soft); white-space: nowrap }
+  .de b { display: block; font-weight: 500; color: var(--ink); font-size: 9.8pt }
+
+  .entrada { font-size: 11pt; color: var(--ink-soft); margin-bottom: 20px }
+  .entrada b { color: var(--ink) }
+
+  /* ---------- paquetes ---------- */
+  .paquetes { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 16px }
+  .paq { border: 1px solid var(--line); border-radius: 6px; padding: 14px 15px 15px; break-inside: avoid }
+  .paq.dos { background: var(--marca-tenue); border-color: var(--marca-suave) }
+  .paq h2 { font-size: 15pt; margin-bottom: 3px }
+  .paq .para { font: 400 9pt/1.4 var(--datos); color: var(--ink-soft); margin-bottom: 10px; min-height: 2.5em }
+  .precio { font: 500 22pt/1 var(--datos); color: var(--marca-text); letter-spacing: -.02em;
+    padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--line) }
+  .precio small { font-size: 8.6pt; font-weight: 400; color: var(--ink-faint); letter-spacing: 0 }
+  .paq ul { font-size: 9.6pt }
+  .hereda { font: 500 9pt/1.4 var(--datos); color: var(--marca-text);
+    background: var(--base); border: 1px solid var(--marca-suave); border-radius: 4px;
+    padding: 6px 9px; margin-bottom: 9px }
+
+  /* ---------- suscripcion ---------- */
+  .susc { background: var(--ink); color: var(--base); border-radius: 6px;
+    padding: 15px 17px; display: grid; grid-template-columns: auto 1fr; gap: 18px;
+    align-items: center; margin-bottom: 15px; break-inside: avoid }
+  .susc .cifra { font: 500 26pt/1 var(--datos); letter-spacing: -.02em; white-space: nowrap }
+  .susc .cifra small { display: block; font-size: 8.2pt; font-weight: 400; letter-spacing: .07em;
+    text-transform: uppercase; opacity: .72; margin-top: 4px }
+  .susc h3 { font-size: 12pt; margin-bottom: 4px }
+  .susc p { font-size: 9.4pt; color: #D6E2E8; margin: 0 }
+  .susc .rotulo { color: #C9922A }
+
+
+</style></head>
+<body>
+
+<div class="cabecera">
+  <h1>Tu negocio, <em>en línea</em></h1>
+  <div class="de">
+    <b>Samuel Espinal</b>
+    9680-4856<br>
+    Precios vigentes en 2026
+  </div>
+</div>
+
+<p class="entrada">
+  <b>Tu presencia en línea importa.</b> Cuando alguien te recomienda, lo primero que hace la
+  otra persona es buscarte. Un sitio propio hace que lo que encuentre sea tuyo: dónde estás,
+  qué ofreces y cómo escribirte, sin dar vueltas. Estos son los dos paquetes.
+</p>
+
+<div class="paquetes">
+  <div class="paq">
+    <p class="rotulo">Paquete 1</p>
+    <h2>Presencia</h2>
+    <p class="para">Para que te encuentren, sepan llegar y sepan qué ofreces.</p>
+    <p class="precio">L 6,000 <small>pago único</small></p>
+    <ul>
+      <li>Sitio de hasta cinco páginas: inicio, servicios, preguntas frecuentes y contacto</li>
+      <li><b>Dónde estás y cómo llegar</b>, con mapa</li>
+      <li><b>Horario que se actualiza solo</b>: el sitio dice si estás abierto en este momento</li>
+      <li>Tus servicios, explicados uno por uno</li>
+      <li>Preguntas frecuentes</li>
+      <li>Botón de WhatsApp en las páginas</li>
+      <li>Formulario que arma el mensaje de WhatsApp ya escrito</li>
+      <li>Diseño propio, con los colores de tu marca</li>
+      <li>Funciona en teléfono, tableta y computadora</li>
+      <li>Preparado para aparecer en Google</li>
+    </ul>
+  </div>
+
+  <div class="paq dos">
+    <p class="rotulo">Paquete 2</p>
+    <h2>Presencia y ventas</h2>
+    <p class="para">Lo anterior, y además que nadie que escriba se quede sin respuesta.</p>
+    <p class="precio">L 8,000 <small>pago único</small></p>
+    <p class="hereda">Todo lo del Paquete 1, más:</p>
+    <ul>
+      <li><b>WhatsApp Business configurado</b>: mensaje de bienvenida, horario de atención y
+          respuestas rápidas para las preguntas de siempre</li>
+      <li><b>Catálogo de servicios</b> dentro de WhatsApp, para contestar con el servicio ya armado</li>
+      <li><b>Cada solicitud queda registrada</b>: quién escribió, qué pidió y cuándo</li>
+      <li><b>Seguimiento de lo pendiente</b> y de lo ya atendido, en vez de buscarlo dentro de
+          la conversación</li>
+      <li>Las respuestas se escriben y se aprueban contigo antes de activarlas</li>
+    </ul>
+  </div>
+</div>
+
+<div class="susc">
+  <div class="cifra">$20 <small>al año</small></div>
+  <div>
+    <p class="rotulo">Suscripción · para cualquiera de los dos paquetes</p>
+    <h3>Dominio, sitio en línea y mantenimiento</h3>
+    <p>Dominio propio a tu nombre · alojamiento y copias de seguridad ·
+       hasta 3 cambios de contenido al mes (horario, servicios, precios, textos) ·
+       actualizaciones de seguridad. Se factura en dólares, una vez al año.</p>
+  </div>
+</div>
+
+</body></html>
