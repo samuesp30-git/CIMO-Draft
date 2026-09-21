@@ -141,4 +141,3 @@ El nombre dice "Médico Odontológico", pero **todo el contenido público es odo
 ## Anexos
 
 - `assets/cimo-logo-ig-150.jpg` — logo extraído del perfil (150 × 150, la máxima resolución pública)
-- `palette.js` — script que genera y verifica los contrastes de la escala
