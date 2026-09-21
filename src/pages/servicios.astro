@@ -30,7 +30,7 @@ import IconoEsp from '../components/IconoEsp.astro';
 
   <div class="contenedor lista">
     {servicios.map((s) => (
-      <article class="servicio" id={s.slug}>
+      <article class:list={['servicio', { clave: s.destacado }]} id={s.slug}>
         <div class="texto">
           <h2>
             {/* El icono va DENTRO del h2, en línea con el nombre.
@@ -50,7 +50,7 @@ import IconoEsp from '../components/IconoEsp.astro';
           <p class="resumen">{s.resumen}</p>
           <p>{s.descripcion}</p>
           {s.destacado && s.pagina && (
-            <p class="mas"><Boton variante="texto" href={s.pagina}>Ver la página de Invisalign →</Boton></p>
+            <p class="mas"><Boton variante="cta" href={s.pagina}>Ver la página de Invisalign</Boton></p>
           )}
         </div>
       </article>
@@ -98,12 +98,47 @@ import IconoEsp from '../components/IconoEsp.astro';
   /* scroll-margin para que el ancla no quede debajo de la cabecera pegajosa */
   .servicio { scroll-margin-top: calc(var(--cabecera-alto) + var(--s-2)) }
   .texto { display: grid; gap: var(--s-2) }
-  /* El icono vuelve a la línea del titular. `align-items: center` y no
-     `baseline`: una imagen no tiene línea base tipográfica, así que con
-     baseline se cuelga por debajo del texto. */
-  .servicio h2 { font-size: var(--step-3); display: flex; align-items: center; gap: 0.45em }
+
+  /* EL TITULAR, A SU TAMAÑO REAL. Estaba a --step-3, que es el h3 del sistema:
+     los cinco servicios —que son el asunto entero de esta página— se componían
+     un escalón por debajo de lo que este sistema llama un h2. El titular de la
+     cabecera sí iba a tamaño completo, así que la página abría fuerte y bajaba
+     la voz justo donde estaba su contenido.
+
+     El icono NO crece con él. Está en 44 px porque se probó a 28, 36 y 48 y es
+     donde el trazo se distingue sin ganarle el peso al titular; al subir el
+     titular, el icono pesa relativamente menos, que es la dirección correcta.
+
+     `align-items: center` y no `baseline`: una imagen no tiene línea base
+     tipográfica, así que con baseline se cuelga por debajo del texto. */
+  .servicio h2 { font-size: var(--step-4); display: flex; align-items: center; gap: 0.45em }
   .resumen { font-size: var(--step-1); color: var(--ink-soft) }
-  .mas { margin-top: calc(var(--s-1) * -1) }
+  .mas { margin-top: var(--s-1) }
+
+  /* EL DESTACADO ES EL PICO DE LA LISTA, no uno más con un enlace al final.
+     servicios.json lo marca desde el dato —es el único con `destacado` y el
+     único con página propia— y la página trataba a los cinco igual: mismo
+     cuerpo, misma línea de 1 px, y toda la diferencia reducida a un enlace de
+     texto al pie del bloque.
+
+     Lo que cambia es la DENSIDAD, no solo el tamaño: superficie propia, aire
+     alrededor y el botón sólido del sistema en vez del enlace. Cinco cosas
+     iguales no tienen lectura; con un pico se ve de un vistazo por dónde
+     empezar.
+
+     NO VA SOBRE TINTA, aunque sea el material más fuerte que hay. El icono de
+     especialidad es un mapa de bits ya teñido en --marca-text: sobre --ink
+     daría 2.29:1 y desaparecería, y volver a teñirlo obliga a regenerar la
+     lámina. Y aun pudiendo, el bloque oscuro vale porque es raro — repetirlo en
+     cada página lo volvería plantilla, que es el mismo argumento con el que
+     este proyecto ya dejó la trama de círculos fuera de todo menos del cierre. */
+  .servicio.clave {
+    background: var(--surface-card-marca);
+    border-top-color: transparent;
+    border-radius: var(--radius);
+    padding-inline: var(--s-4);
+    margin-bottom: var(--s-3);
+  }
 
 
 </style>

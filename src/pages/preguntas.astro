@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import BandaCierre from '../components/BandaCierre.astro';
 import Titular from '../components/Titular.astro';
 import Boton from '../components/Boton.astro';
 import faq from '../data/faq.json';
@@ -63,6 +64,20 @@ const pendientes = faq.filter((p) => p.pendiente);
       <Boton variante="contorno" tamano="sm" href="contacto.html">Ir a contacto</Boton>
     </aside>
   </div>
+
+  {/* La ÚNICA de las seis páginas que no cerraba. Servicios, contacto e
+      invisalign terminan en esta banda y el inicio en su propia franja oscura;
+      preguntas se acababa en el borde inferior de una caja pálida, a media
+      columna, y el visitante quedaba mirando blanco.
+
+      BandaCierre existe precisamente por esto —lo dice su cabecera: «el sitio se
+      aplanaba en cuanto salías del inicio»—. Esta página era el trozo que quedó
+      sin arreglar.
+
+      No choca con el botón del aside: aquel lleva a contacto y este abre el
+      diálogo de cita. Son dos acciones distintas, y la de cerrar la página es la
+      que vale más aquí, porque quien ha leído seis respuestas ya está decidido. */}
+  <BandaCierre>¿Te queda una duda que no está aquí? Pide la cita y te la resuelven en la valoración.</BandaCierre>
 </Base>
 
 <script is:inline>
@@ -139,7 +154,12 @@ const pendientes = faq.filter((p) => p.pendiente);
     padding: var(--s-3) var(--s-4) var(--s-3) 0;
     position: relative;
     font-family: var(--font-titulo);
-    font-size: var(--step-1);
+    /* Las seis preguntas SON esta página, y se componían a --step-1, que es
+       apenas un punto por encima del cuerpo. El titular de arriba iba a
+       --step-5: la página abría a 62 px y seguía a 21. A --step-2 cada pregunta
+       se lee como lo que es, un encabezado, sin que seis seguidas con su línea
+       de 1 px se conviertan en una escalera. */
+    font-size: var(--step-2);
     color: var(--ink);
   }
   summary::-webkit-details-marker { display: none }

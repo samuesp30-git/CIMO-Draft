@@ -386,6 +386,44 @@ cambiar de contraste. Sigue en 199°, dentro de la banda de la marca.
 queda sobre blanco. Se escriben separados —`background-color` y
 `background-image`— y así además el barrido puede medir la superficie.
 
+### Dos extremos no bastan cuando hay una capa encima
+
+**Septiembre de 2026.** La regla de arriba es cierta para un degradado solo, y
+resultó insuficiente en cuanto hay otra capa sobre él.
+
+`.promesa`, en el inicio, apila trama de puntos **sobre** `--degradado-oscuro`.
+Su rótulo iba en `--marca-sobre-oscuro`, que contra `--ink` sólido da 4.81 y
+parecía sobrado. Rasterizando y buscando el píxel más claro que hay realmente
+bajo cada línea, el rótulo daba **3.68:1** con un mínimo de 4.5.
+
+| medición | resultado |
+|---|---|
+| calculado contra `--ink` | 4.81 · pasa |
+| calculado contra `--ink-marino` (extremo claro) | 4.41 · no llega |
+| **medido contra el píxel real** | **3.68 · no llega** |
+
+Los 0.73 que faltan entre la segunda fila y la tercera los pone **la trama**: un
+punto de 1 px al 9 % debajo de una letra de 13 px sube la luminancia local por
+encima de cualquiera de las paradas. Por eso el peor píxel medido es
+`rgb(42,70,83)`, más claro que el propio `--ink-marino`.
+
+> Con capas apiladas, los extremos del degradado **dejan de ser el peor caso**.
+> La única comprobación válida es rasterizar, ocultar el texto y buscar el píxel
+> más claro dentro de su caja.
+
+Cómo quedó, y por qué no se resolvió bajando la exigencia:
+
+- El rótulo de `.promesa` pasa a `--sobre-oscuro` — **5.40 medido**.
+- Los números de la secuencia **siguen en azul**: van a `--step-2`, que es texto
+  grande, y con mínimo 3.0 su 3.72 pasa. No se cambian por simetría.
+- La ficha del escáner de `invisalign` usa el mismo material **sin degradado**:
+  en una caja de 456 px no se percibe, y sin él la superficie vuelve a tener un
+  color computado que el barrido sí puede medir.
+
+Es la misma familia de agujero que la fotografía (§7), un escalón más abajo: allí
+no hay ni dos paradas entre las que interpolar; aquí las hay, pero no son el
+peor caso.
+
 ### La trama
 
 Una retícula de puntos de 1 px cada 22, en `--firma-sobre-oscuro` al 9 %. **No es
@@ -952,14 +990,6 @@ el color contra el que se midio el token. Es **mas estricto** que lo que ya
 habia: `--trama-puntos` si corre por debajo del rotulo de oro en `.promesa`.
 
 ### Una lamina de figuras se mide, no se estira
-
-Haikei entrega PNG de 500x333. Puestos de fondo en una banda de 1400 px, el
-trazo de 2 px se convierte en 5,6 px borrosos y la textura se lee como un fondo
-pixelado. Lo que se hace es **recuperar la geometria**: ajuste algebraico de
-circunferencia (Kasa) sobre cada componente conexo, que devuelve centro y radio
-con un residuo de 0.50 px — el error de cuantizacion de una curva rasterizada, o
-sea ajuste exacto. Luego se reescribe como SVG incrustado: 1,4 KB, nitido a
-cualquier ancho, cero peticiones.
 
 Dos detalles que hacen que funcione:
 

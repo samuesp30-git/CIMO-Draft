@@ -4,7 +4,6 @@ import Base from '../layouts/Base.astro';
 import Titular from '../components/Titular.astro';
 import Boton from '../components/Boton.astro';
 import BandaCierre from '../components/BandaCierre.astro';
-import Marcador from '../components/Marcador.astro';
 import clinica from '../data/clinica.json';
 
 // Página propia de Invisalign, no una línea en una lista de servicios.
@@ -48,7 +47,31 @@ const pasos = [
           <CitaCTA tamano="lg" texto="Agendar valoración" />
         </div>
       </div>
-      <Marcador alto={320} texto="Fotografía del escáner y de la clínica pendiente" pendiente="fotografia" />
+      {/* Aquí había un rectángulo punteado de 320 px que decía «fotografía
+          pendiente». El inicio ya quitó el suyo y dejó escrito por qué: era el
+          objeto MÁS GRANDE de la primera pantalla y lo que anunciaba era que el
+          negocio no está terminado. Esta es la página que más vende y seguía
+          abriendo con esa frase.
+
+          Un hueco declarado nombra un trabajo —un ancla y una prueba—, así que
+          se llena con lo que el asunto SÍ tiene: el aparato con el que se
+          planifica el tratamiento, con su nombre y su fecha. Estaba al final de
+          la página, en una columna blanca bajo un rótulo de 13 px.
+
+          NO son los tres tiempos de la promesa del escáner: clinica.json avisa
+          expresamente de no confundirlos con los cuatro pasos de aquí abajo.
+          Aquellos son la razón para elegir esta clínica y viven en el inicio;
+          estos cuatro son el recorrido clínico. Esto de aquí no es ninguno de
+          los dos: es la ficha del instrumento.
+
+          La fotografía sigue pendiente y sigue declarada en pendientes.json.
+          Simplemente ya no es lo primero que se ve de Invisalign. */}
+      <div class="instrumento">
+        <p class="et">El escáner</p>
+        <h2>{escaner.nombre}</h2>
+        <p class="que">{escaner.que}</p>
+        <p class="desde">En la clínica desde {escaner.desde}.</p>
+      </div>
     </div>
   </section>
 
@@ -67,16 +90,18 @@ const pasos = [
     </div>
   </section>
 
-  <section class="escaner">
-    <div class="contenedor rejilla-esc">
-      <div>
-        <h2 class="versalita">El escáner</h2>
-        <h3>{escaner.nombre}</h3>
-        <p>{escaner.que}</p>
-        <p class="desde">En la clínica desde {escaner.desde}.</p>
-      </div>
+  {/* La ficha del escáner subió al hero, así que aquí queda la pregunta que de
+      verdad se hace quien llega hasta abajo: cuál de los dos le conviene. Era
+      media caja azul flotando al lado de una columna que ahora sería un
+      duplicado; sin esa columna ocupa el ancho de lectura y deja de leerse como
+      una nota al margen.
+
+      El titular sube de h3 a h2: ya no es el segundo de dos bloques hermanos,
+      es el titular de su propia sección. */}
+  <section class="decision">
+    <div class="contenedor">
       <div class="comparativa">
-        <h3>¿Brackets o alineadores?</h3>
+        <h2>¿Brackets o alineadores?</h2>
         <p>
           Los alineadores son removibles y discretos; los brackets siguen siendo
           la opción indicada en muchos casos. Cuál te conviene depende de tu
@@ -135,23 +160,102 @@ const pasos = [
   .pasos h3 { font-size: var(--step-2) }
   .pasos p { font-size: var(--step--1); color: var(--ink-soft) }
 
-  .escaner .contenedor { padding-block: var(--s-5) }
-  .rejilla-esc { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5) }
-  .rejilla-esc h3 { font-size: var(--step-2); margin-block: var(--s-1) }
-  .rejilla-esc p { color: var(--ink-soft) }
-  .desde { font-family: var(--font-datos); font-size: var(--step--1); color: var(--ink-faint); margin-top: var(--s-1) }
+  /* El material de `.promesa` del inicio, PERO SIN EL DEGRADADO, y la razón está
+     medida.
+
+     --degradado-oscuro arranca en --ink-marino. Bajo el rótulo de 13 px el peor
+     píxel real de esa zona es rgb(40,69,82) —más claro que el propio token,
+     porque la trama de puntos suma luz encima— y ahí --marca-sobre-oscuro cae a
+     3.74:1. El cálculo contra el color sólido daba 4.81 y habría dejado pasar un
+     rótulo que no llega: un degradado no tiene color computado, así que solo se
+     ve rasterizando y buscando el píxel más claro bajo cada línea.
+
+     Se podía haber bajado el rótulo a un neutro claro. No se hace: el azul es la
+     voz de los rótulos de ficha en este sistema —`.promesa` lo usa igual— y lo
+     que sobra es el degradado, que en una caja de 456 px apenas se percibe.
+     Sobre tinta sólida el mismo azul da 4.81 y la ficha queda además auditable
+     de verdad, con un color computado que el barrido sí puede medir.
+
+     El sólido y la trama siguen separados: si la trama no pintara, el texto cae
+     sobre --ink y no sobre transparente. */
+  .instrumento {
+    background-color: var(--ink);
+    background-image: var(--trama-puntos);
+    background-size: var(--trama-paso);
+    border-radius: var(--radius);
+    padding: var(--s-4);
+    display: grid;
+    gap: var(--s-2);
+    align-content: center;
+    min-height: 320px;
+  }
+  /* EL RÓTULO NO PUEDE IR EN AZUL, y no es una preferencia: está medido.
+     --marca-sobre-oscuro a 13 px sobre esta superficie da 4.00:1 contra el peor
+     píxel real. El cálculo contra --ink sólido decía 4.81; la diferencia la pone
+     la trama de puntos, que es un radial azul claro al 9 % y sube la luminancia
+     justo donde cae la letra. Un punto de 1 px debajo de un rótulo de 13 px
+     basta para tumbarlo.
+
+     Así que la jerarquía de esta ficha la hace la TIPOGRAFÍA, no el color: sobre
+     esta superficie el sistema solo tiene un tono secundario que aguante texto
+     pequeño, y es este. El rótulo se distingue por caja alta, tracking y tamaño,
+     que es como se distingue en el resto del sitio. */
+  .instrumento .et {
+    font-family: var(--font-datos);
+    font-size: var(--step--2);
+    font-weight: 500;
+    letter-spacing: var(--track-versalita);
+    text-transform: uppercase;
+    color: var(--sobre-oscuro);
+    margin: 0;
+  }
+  /* El h2 se queda a su tamaño real. El nombre del aparato ES el titular de
+     este bloque; abajo estaba a --step-2 bajo un rótulo de 13 px. */
+  .instrumento h2 { color: var(--base) }
+  .instrumento .que { color: var(--sobre-oscuro); font-size: var(--step-0); margin: 0 }
+  /* La fecha cierra la ficha separada por una línea, como el remate de
+     `.promesa`: es el dato que convierte un nombre en una prueba.
+     NO lleva --sobre-oscuro-suave aunque la línea sí: como texto pequeño da
+     4.44:1 contra la parada marino del degradado y no llega. La línea puede,
+     porque un borde no tiene que pasar contraste de texto. */
+  .instrumento .desde {
+    font-family: var(--font-datos);
+    font-size: var(--step--1);
+    color: var(--sobre-oscuro);
+    margin: 0;
+    padding-top: var(--s-2);
+    border-top: 1px solid var(--sobre-oscuro-suave);
+  }
+
+  .decision .contenedor { padding-block: var(--s-5) }
+
+  /* Al quitarle la columna vecina, la caja se quedó ocupando media pantalla con
+     la otra mitad en blanco, justo encima de una banda a sangre: leía como un
+     resto, no como una sección.
+
+     Toma el ritmo que esta misma página ya usa abajo en el cierre —texto a la
+     izquierda, control a la derecha, `1fr auto`—, así que ocupa el ancho sin
+     inventar una composición nueva. El párrafo se queda en medida de lectura
+     dentro de la caja; lo que se estira es la superficie, no la línea. */
   .comparativa {
     background: var(--surface-card-marca);
     border-radius: var(--radius);
-    padding: var(--s-3);
+    padding: var(--s-4);
     display: grid;
-    gap: var(--s-1);
-    align-content: start;
-    justify-items: start;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: var(--s-4);
+    row-gap: var(--s-2);
+  }
+  .comparativa h2 { grid-column: 1 / -1 }
+  .comparativa p { color: var(--ink-soft); margin: 0; max-width: 62ch }
+
+  @media (max-width: 48rem) {
+    .comparativa { grid-template-columns: 1fr; justify-items: start }
   }
 
   @media (max-width: 60rem) {
-    .rejilla, .rejilla-esc { grid-template-columns: 1fr }
+    .rejilla { grid-template-columns: 1fr }
     .pasos { grid-template-columns: repeat(2, 1fr) }
   }
   @media (max-width: 34rem) {

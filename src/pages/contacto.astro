@@ -51,7 +51,7 @@ const waGeneral = enlaceWhatsApp(clinica.whatsapp.numero, clinica.whatsapp.plant
             WhatsApp y otra como «Teléfono»— y era el MISMO número: una lista que
             repite un dato obliga a leerla dos veces para descubrir que no hacía
             falta. La clínica atiende por WhatsApp, así que esa es la entrada. */}
-        <li>
+        <li class="principal">
           <span class="et">WhatsApp</span>
           <a href={waGeneral} target="_blank" rel="noopener noreferrer" data-wa-contacto>{clinica.whatsapp.display}</a>
         </li>
@@ -83,5 +83,26 @@ const waGeneral = enlaceWhatsApp(clinica.whatsapp.numero, clinica.whatsapp.plant
   .vias li { display: grid; gap: 2px }
   .et { font-family: var(--font-datos); font-size: var(--step--2); letter-spacing: var(--track-versalita); text-transform: uppercase; color: var(--ink-faint) }
   .vias a { font-family: var(--font-datos); font-size: var(--step-1) }
+
+  /* LAS DOS VÍAS NO SON IGUALES, y la página las componía igual. La clínica
+     atiende por WhatsApp —está escrito ahí arriba, es la razón de que el
+     teléfono y el WhatsApp sean una sola entrada—, así que el número es el dato
+     por el que existe esta página. Iba a --step-1 bajo un rótulo de 13 px: más
+     pequeño que la entradilla que tiene encima, en una columna de 34 rem sobre
+     blanco. El correo se queda donde estaba; es la vía secundaria y ahora se
+     lee como tal.
+
+     Jost y no Times porque es una cifra: --font-datos es la voz de los datos en
+     todo el sitio —horarios, dirección, rótulos— y una serif de texto corrido
+     no compone bien un número que alguien va a copiar. */
+  .vias .principal a { font-size: var(--step-3); line-height: 1.2 }
+
+  /* El subrayado del sistema es un `border-bottom` en el <a> (tokens.css), no
+     un text-decoration. Como aquí el enlace es celda de una rejilla, se estiraba
+     a las 34 rem de la columna: una regla de 1 px cruzando medio ancho por
+     debajo de un número de 33 px, que se lee como línea de tabla y no como
+     enlace. A --step-1 apenas se notaba; al crecer el número, sí.
+     `justify-self: start` devuelve la caja al ancho del texto. */
+  .vias a { justify-self: start }
 
 </style>
