@@ -20,7 +20,7 @@
 // queda entero.
 
 import sharp from 'sharp';
-import { mkdirSync, statSync } from 'node:fs';
+import { mkdirSync, statSync, readFileSync } from 'node:fs';
 
 const ORIGEN = 'originales/simbolos-lamina.jpg';
 const SALIDA = 'public/img/ico';
@@ -28,6 +28,22 @@ const SOLO_DETECTAR = process.argv.includes('--solo-detectar');
 
 // Color con el que se tinen. --marca-text, 5.70:1 sobre blanco.
 const TINTA = { r: 0x2a, g: 0x6d, b: 0x8f };
+
+// Y una SEGUNDA tinta, para el icono que va sobre superficie oscura.
+//
+// Como el icono es un mapa de bits, no hereda el color: el tono se aplica aqui
+// al generarlo, no con un token en el CSS. El destacado de servicios pasa a
+// fondo --ink-marino, y ahi la tinta oscura da 2.13:1 — el icono desaparece.
+// --marca sobre ese fondo da 5.53:1, y es el mismo azul del simbolo del logo,
+// que es de donde salio la lamina.
+//
+// Solo se genera para el servicio DESTACADO, que es el unico que va sobre
+// oscuro. Se lee de servicios.json en vez de fijarlo aqui: si manana el
+// destacado es otro, la variante clara se mueve sola y no queda un .webp
+// huerfano pesando en public/.
+const TINTA_CLARA = { r: 0x6e, g: 0xb8, b: 0xdd };
+const servicios = JSON.parse(readFileSync('src/data/servicios.json', 'utf8'));
+const DESTACADO = servicios.find((s) => s.destacado)?.iconoEsp ?? null;
 
 const COLS = 4;
 const FILAS = 3;
@@ -154,20 +170,27 @@ for (const t of trabajos) {
     );
   }
 
-  // 2. superficie del color de marca, con el gris como canal alfa
-  const tenido = await sharp({
-    create: { width: LADO, height: LADO, channels: 3, background: TINTA },
-  })
-    .joinChannel(alfa, { raw: { width: LADO, height: LADO, channels: 1 } })
-    .png()
-    .toBuffer();
+  // 2. superficie del color de la tinta, con el gris como canal alfa.
+  //    La mascara es la misma para las dos tintas: lo unico que cambia es el
+  //    color de debajo, asi que el dibujo es identico y solo varia el tono.
+  const tintas = [{ tinta: TINTA, sufijoTono: '' }];
+  if (t.m.id === DESTACADO) tintas.push({ tinta: TINTA_CLARA, sufijoTono: '-claro' });
 
-  for (const z of TAMANOS) {
-    const destino = `${SALIDA}/${t.m.id}${z.sufijo}.webp`;
-    await sharp(tenido).resize(z.px, z.px).webp({ quality: 90, alphaQuality: 100 }).toFile(destino);
-    const kb = statSync(destino).size / 1024;
-    total += kb;
-    console.log(`  ${destino.padEnd(32)} ${z.px}x${z.px}  ${kb.toFixed(1)} KB`);
+  for (const { tinta, sufijoTono } of tintas) {
+    const tenido = await sharp({
+      create: { width: LADO, height: LADO, channels: 3, background: tinta },
+    })
+      .joinChannel(alfa, { raw: { width: LADO, height: LADO, channels: 1 } })
+      .png()
+      .toBuffer();
+
+    for (const z of TAMANOS) {
+      const destino = `${SALIDA}/${t.m.id}${sufijoTono}${z.sufijo}.webp`;
+      await sharp(tenido).resize(z.px, z.px).webp({ quality: 90, alphaQuality: 100 }).toFile(destino);
+      const kb = statSync(destino).size / 1024;
+      total += kb;
+      console.log(`  ${destino.padEnd(34)} ${z.px}x${z.px}  ${kb.toFixed(1)} KB`);
+    }
   }
 }
 console.log(`\n  total ${total.toFixed(0)} KB`);

@@ -53,6 +53,7 @@
     "uso": "iconos",
     "recortes": [
       "invisible",
+      "invisible-claro",
       "brackets",
       "higiene",
       "ninos",
@@ -63,7 +64,7 @@
     "fuente": "IA",
     "licencia": "Generada con IA por el cliente. Los terminos del servicio ceden al usuario los derechos sobre la salida, asi que el uso comercial no plantea problema de licencia.",
     "url": "",
-    "nota": "GENERADA CON IA por el cliente. Lamina 4x3 de iconos de linea de la que se recortan los de especialidad (scripts/iconos-simbolos.mjs). NO es fotografia de CIMO ni afirma nada sobre la clinica. Viene con trazo celeste sobre azul marino: el script usa el brillo como alfa y lo tine con --marca-text, porque el celeste sobre blanco da 2.2:1 y no puede escribir. De los doce solo se extraen CINCO, los que casan con un servicio real; los otros siete son especialidades que ninguna fuente atribuye a CIMO. Sustituye a la lamina anterior de discos 3D, que a 30px dejaba de distinguirse."
+    "nota": "GENERADA CON IA por el cliente. Lamina 4x3 de iconos de linea de la que se recortan los de especialidad (scripts/iconos-simbolos.mjs). NO es fotografia de CIMO ni afirma nada sobre la clinica. Viene con trazo celeste sobre azul marino: el script usa el brillo como alfa y lo tine con --marca-text, porque el celeste sobre blanco da 2.2:1 y no puede escribir. DOS TINTAS: la normal para fondo claro, y una variante -claro tenida en --marca para el servicio destacado, que desde septiembre de 2026 va sobre --ink-marino; alli la tinta oscura daria 2.13:1 y el icono desapareceria. Es el mismo recorte y la misma procedencia, solo cambia el color de debajo de la mascara, y por eso se declara aqui y no como lamina aparte. Solo se genera para el destacado, que se lee de servicios.json. De los doce solo se extraen CINCO, los que casan con un servicio real; los otros siete son especialidades que ninguna fuente atribuye a CIMO. Sustituye a la lamina anterior de discos 3D, que a 30px dejaba de distinguirse."
   },
   {
     "id": "haikei-circulos",

@@ -44,13 +44,13 @@ import IconoEsp from '../components/IconoEsp.astro';
                 alt vacío a propósito: el nombre del servicio está justo al
                 lado, en el propio titular. Describir el icono haría que un
                 lector de pantalla dijera el servicio dos veces. */}
-            {'iconoEsp' in s && <IconoEsp nombre={s.iconoEsp} tamano={44} alt="" />}
+            {'iconoEsp' in s && <IconoEsp nombre={s.iconoEsp} tamano={44} alt="" tono={s.destacado ? 'claro' : 'oscuro'} />}
             <span>{s.nombre}</span>
           </h2>
           <p class="resumen">{s.resumen}</p>
           <p>{s.descripcion}</p>
           {s.destacado && s.pagina && (
-            <p class="mas"><Boton variante="cta" href={s.pagina}>Ver la página de Invisalign</Boton></p>
+            <p class="mas"><Boton variante="claro" href={s.pagina}>Ver la página de Invisalign</Boton></p>
           )}
         </div>
       </article>
@@ -93,7 +93,12 @@ import IconoEsp from '../components/IconoEsp.astro';
   }
   .anclas a:hover { border-color: var(--marca-text); color: var(--ink) }
 
-  .lista { display: grid; gap: 0; padding-bottom: var(--s-4) }
+  /* AIRE ENTRE LA FRANJA Y LA LISTA. La cabecera lavada terminaba en su borde y
+     el primer servicio empezaba pegado a él, así que la tarjeta destacada
+     parecía un trozo de la franja y no el primer elemento de otra cosa. Con el
+     destacado en oscuro se notaba más todavía: dos superficies distintas
+     tocándose sin junta. */
+  .lista { display: grid; gap: 0; padding-block: var(--s-4) }
   .servicio { border-top: 1px solid var(--line); padding-block: var(--s-4) }
   /* scroll-margin para que el ancla no quede debajo de la cabecera pegajosa */
   .servicio { scroll-margin-top: calc(var(--cabecera-alto) + var(--s-2)) }
@@ -126,19 +131,29 @@ import IconoEsp from '../components/IconoEsp.astro';
      iguales no tienen lectura; con un pico se ve de un vistazo por dónde
      empezar.
 
-     NO VA SOBRE TINTA, aunque sea el material más fuerte que hay. El icono de
-     especialidad es un mapa de bits ya teñido en --marca-text: sobre --ink
-     daría 2.29:1 y desaparecería, y volver a teñirlo obliga a regenerar la
-     lámina. Y aun pudiendo, el bloque oscuro vale porque es raro — repetirlo en
-     cada página lo volvería plantilla, que es el mismo argumento con el que
-     este proyecto ya dejó la trama de círculos fuera de todo menos del cierre. */
+     VA SOBRE OSCURO, por decisión del cliente: pidió #1F3945 para resaltarlo.
+     Ese color YA ESTABA en el sistema — es --ink-marino (#1E3A47), del que
+     difiere en 1, -1 y -2 por canal y con el que da 1.01:1 de contraste, o sea
+     que son el mismo color. Se usa el token y no el literal para no duplicar un
+     valor que ya tiene nombre y procedencia.
+
+     Lo que el color obliga a resolver: el icono de especialidad es un mapa de
+     bits con el color aplicado al generarlo, y la tinta normal (--marca-text)
+     sobre este fondo da 2.13:1 — desaparece. Por eso scripts/iconos-simbolos.mjs
+     emite ahora una variante teñida en --marca, que sobre este fondo da 5.53:1,
+     y solo para el servicio destacado. Y el botón pasa de `cta` (tinta sólida) a
+     `claro` (blanco sólido), que es el par que el sistema ya usa sobre oscuro en
+     las bandas de cierre. */
   .servicio.clave {
-    background: var(--surface-card-marca);
+    background-color: var(--ink-marino);
     border-top-color: transparent;
     border-radius: var(--radius);
-    padding-inline: var(--s-4);
+    padding: var(--s-4);
     margin-bottom: var(--s-3);
   }
+  .servicio.clave h2 { color: var(--base) }
+  .servicio.clave .resumen,
+  .servicio.clave p { color: var(--sobre-oscuro) }
 
 
 </style>

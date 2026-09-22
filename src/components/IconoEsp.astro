@@ -31,8 +31,14 @@ interface Props {
   tamano?: number;
   /** texto alternativo; vacio si el titular de al lado ya lo nombra */
   alt?: string;
+  /**
+   * Sobre que superficie va. `claro` pide la variante tenida en --marca, que
+   * solo existe para el servicio destacado —el unico que va sobre oscuro—.
+   * Como el icono es un mapa de bits, el tono se elige aqui, no con un token.
+   */
+  tono?: 'oscuro' | 'claro';
 }
-const { nombre, tamano = 36, alt = '' } = Astro.props;
+const { nombre, tamano = 36, alt = '', tono = 'oscuro' } = Astro.props;
 
 if (tamano < 24 || tamano > 72) {
   throw new Error(
@@ -57,12 +63,18 @@ if (!(lamina.recortes || []).includes(nombre)) {
     'Cada icono publicado tiene que constar en la procedencia de su lamina.'
   );
 }
+
+// La variante clara sale del MISMO recorte con otra tinta, asi que no necesita
+// entrada propia de procedencia. Lo que si necesita es existir: solo se genera
+// para el servicio destacado, y pedirla para otro daria una imagen rota que
+// nadie veria hasta abrir la pagina.
+const archivo = tono === 'claro' ? `${nombre}-claro` : nombre;
 ---
 
 <img
   class="icono-esp"
-  src={`img/ico/${nombre}.webp`}
-  srcset={`img/ico/${nombre}.webp 1x, img/ico/${nombre}@2x.webp 2x`}
+  src={`img/ico/${archivo}.webp`}
+  srcset={`img/ico/${archivo}.webp 1x, img/ico/${archivo}@2x.webp 2x`}
   width={tamano}
   height={tamano}
   alt={alt}

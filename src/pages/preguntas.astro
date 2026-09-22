@@ -94,6 +94,25 @@ const pendientes = faq.filter((p) => p.pendiente);
     var DUR = 340, CURVA = 'cubic-bezier(.22,.61,.36,1)';
     var fichas = [].slice.call(acordeon.querySelectorAll('details'));
 
+    // SE QUITA `name`, Y ESTA ES LA CAUSA DEL CIERRE DE GOLPE.
+    //
+    // `<details name="faq">` le da al navegador la exclusividad nativa: en
+    // cuanto UNO se abre, cierra los demas EN EL ACTO y de forma sincrona. El
+    // script ya animaba el cierre de la hermana, pero justo despues hacia
+    // `d.open = true` para poder medir la que se abre, y en ese mismo instante
+    // el navegador ponia `open = false` en la hermana. La animacion seguia
+    // corriendo sobre un elemento ya cerrado: el contenido desaparecia en el
+    // primer fotograma y lo que se veia era un corte seco.
+    //
+    // No se arregla alargando la duracion —el problema no es la velocidad, es
+    // que la animacion no llega a verse—. Se quita el atributo y la
+    // exclusividad la lleva el script, que es quien ya la estaba llevando.
+    //
+    // Se quita AQUI y no en el HTML a proposito: sin JavaScript el atributo
+    // sigue puesto y el acordeon sigue siendo exclusivo, que es el
+    // comportamiento que se queria conservar.
+    fichas.forEach(function (d) { d.removeAttribute('name'); });
+
     function animar(d, abriendo, alFinal) {
       var cuerpo = d.querySelector('.respuesta');
       if (!cuerpo) { d.open = abriendo; if (alFinal) alFinal(); return; }
@@ -101,8 +120,22 @@ const pendientes = faq.filter((p) => p.pendiente);
       if (abriendo) d.open = true;            // hay que abrirlo para poder medirlo
       var h = cuerpo.scrollHeight;
       cuerpo.style.overflow = 'hidden';
-      var de = abriendo ? [{ height: '0px', opacity: 0 }, { height: h + 'px', opacity: 1 }]
-                        : [{ height: h + 'px', opacity: 1 }, { height: '0px', opacity: 0 }];
+
+      // SE ANIMA TAMBIEN EL RELLENO, y no es un adorno.
+      //
+      // El sistema es `box-sizing: border-box`, asi que la altura INCLUYE el
+      // padding. Animando solo `height` hacia 0, la caja se quedaba clavada en
+      // los 24px de su `padding-bottom`: medido, bajaba de 105 a 24 en 150ms y
+      // ahi se quedaba los 190ms restantes, hasta que `open = false` la cerraba
+      // de un tiron. O sea que el ultimo tercio de la animacion no se veia y lo
+      // que se percibia era un corte.
+      //
+      // Llevando el relleno a 0 con la misma curva, la caja llega de verdad a
+      // cero y el cierre se ve entero.
+      var pad = getComputedStyle(cuerpo).paddingBottom;
+      var abierto = { height: h + 'px', paddingBottom: pad, opacity: 1 };
+      var cerrado = { height: '0px', paddingBottom: '0px', opacity: 0 };
+      var de = abriendo ? [cerrado, abierto] : [abierto, cerrado];
       d._anim = cuerpo.animate(de, { duration: DUR, easing: CURVA });
       d._anim.onfinish = function () {
         cuerpo.style.overflow = '';
@@ -169,8 +202,11 @@ const pendientes = faq.filter((p) => p.pendiente);
     right: var(--s-1);
     top: 50%;
     width: 10px; height: 10px;
-    border-right: 1.5px solid var(--marca-text);
-    border-bottom: 1.5px solid var(--marca-text);
+    /* La flecha en oro. Es el mismo papel que ya tiene en el resto del sitio
+       —marca algo, no escribe un contenido— y --oro-text da 5.47:1 sobre
+       blanco, muy por encima del 3.0 que pide un elemento de interfaz. */
+    border-right: 1.5px solid var(--text-seccion);
+    border-bottom: 1.5px solid var(--text-seccion);
     transform: translateY(-70%) rotate(45deg);
     transition: transform .34s var(--ease);
   }
