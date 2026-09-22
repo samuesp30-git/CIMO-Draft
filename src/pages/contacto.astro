@@ -77,9 +77,29 @@ const waGeneral = enlaceWhatsApp(clinica.whatsapp.numero, clinica.whatsapp.plant
   /* Horario, dirección y mapa se fueron a Ubicacion.astro, que los comparte con
      el inicio. Aquí abajo queda solo cómo escribir. */
   .rejilla { padding-bottom: var(--s-5) }
-  .bloque { display: grid; gap: var(--s-2); align-content: start; max-width: 34rem }
+  .bloque { display: grid; gap: var(--s-2); align-content: start }
 
   ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1) }
+
+  /* LAS DOS VÍAS, SOBRE UNA SUPERFICIE Y EN DOS COLUMNAS.
+     El titular de esta página dice que la vía más rápida es escribirnos, y las
+     dos vías para hacerlo eran lo ÚLTIMO y lo más pequeño: una columna de
+     34 rem contra el margen izquierdo, sobre blanco, con la mitad derecha de la
+     página vacía. La acción principal de la página era su elemento más callado.
+
+     El rótulo en oro se queda FUERA de la caja a propósito: sobre --marca-suave
+     el oro da 4.61:1, que pasa por 0.11, y no hay razón para gastar ese margen
+     cuando sobre blanco tiene 5.47. Dentro solo van tintas con holgura medida
+     contra este fondo: --ink-faint 4.81 y --marca-text 4.81 (tokens.css:94,99). */
+  .vias {
+    background: var(--surface-card-marca);
+    border-radius: var(--radius);
+    padding: var(--s-4);
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--s-4);
+    row-gap: var(--s-3);
+    align-items: start;
+  }
   .vias li { display: grid; gap: 2px }
   .et { font-family: var(--font-datos); font-size: var(--step--2); letter-spacing: var(--track-versalita); text-transform: uppercase; color: var(--ink-faint) }
   .vias a { font-family: var(--font-datos); font-size: var(--step-1) }
@@ -105,4 +125,9 @@ const waGeneral = enlaceWhatsApp(clinica.whatsapp.numero, clinica.whatsapp.plant
      `justify-self: start` devuelve la caja al ancho del texto. */
   .vias a { justify-self: start }
 
+  /* El número va a --step-3. En dos columnas a 390 px no cabe ni él ni el
+     correo, que es más largo todavía. */
+  @media (max-width: 48rem) {
+    .vias { grid-template-columns: 1fr; padding: var(--s-3) }
+  }
 </style>

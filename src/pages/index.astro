@@ -4,6 +4,7 @@ import Base from '../layouts/Base.astro';
 import Titular from '../components/Titular.astro';
 import Boton from '../components/Boton.astro';
 import Ubicacion from '../components/Ubicacion.astro';
+import IconoEsp from '../components/IconoEsp.astro';
 import clinica from '../data/clinica.json';
 import servicios from '../data/servicios.json';
 
@@ -65,13 +66,28 @@ const tresPrimeros = servicios.slice(0, 3);
 
   <section class="servicios">
     <div class="contenedor">
-      <Titular nivel={2} previo="Servicios" resalte="que se ofrece hoy" class="revelable">Lo</Titular>
+      <Titular nivel={2} previo="Servicios" resalte="mas buscado" class="revelable">Lo</Titular>
 
+      {/* Estas tres tarjetas contradecian a la pagina siguiente. Aqui los tres
+          servicios se componian identicos —caja blanca, filete de 1 px, titulo
+          y una linea— y en servicios.html «Ortodoncia invisible» es una tarjeta
+          oscura a todo lo ancho con boton propio. El visitante que venia del
+          inicio no tenia forma de saber cual de los tres era el motivo por el
+          que existe esta clinica, y al pinchar la tarjeta no pasaba nada
+          porque no era un enlace.
+
+          El icono es el MISMO de servicios.html, y esa es la gracia: es lo que
+          hace que las dos paginas hablen del mismo objeto. A 32 px y no a 44
+          porque aqui acompana a un h3, no a un h2. */}
       <div class="tarjetas">
         {tresPrimeros.map((s) => (
-          <article class="tarjeta">
-            <h3>{s.nombre}</h3>
+          <article class:list={['tarjeta', { clave: s.destacado }]}>
+            <h3>
+              {'iconoEsp' in s && <IconoEsp nombre={s.iconoEsp} tamano={32} alt="" />}
+              <span>{s.nombre}</span>
+            </h3>
             <p>{s.resumen}</p>
+            {s.destacado && s.pagina && <a class="ir" href={s.pagina}>Ver la página de Invisalign →</a>}
           </article>
         ))}
       </div>
@@ -112,7 +128,6 @@ const tresPrimeros = servicios.slice(0, 3);
   .texto { display: grid; gap: var(--s-3) }
   .entradilla { font-size: var(--step-1); color: var(--ink-soft); max-width: 44ch }
 
-  .acciones { display: flex; gap: var(--s-2); align-items: center; flex-wrap: wrap }
 
   /* NO son tres tarjetas. Tres cajas iguales en fila es el contenedor perezoso,
      y además dirían «tres cosas sueltas» cuando lo que hay es una secuencia:
@@ -212,8 +227,18 @@ const tresPrimeros = servicios.slice(0, 3);
     gap: var(--s-1);
     align-content: start;
   }
-  .tarjeta h3 { font-size: var(--step-2) }
+  /* `align-items: center` y no `baseline`, igual que en servicios.html: una
+     imagen no tiene linea base tipografica y con baseline se descuelga. */
+  .tarjeta h3 { font-size: var(--step-2); display: flex; align-items: center; gap: 0.4em }
   .tarjeta p { font-size: var(--step--1); color: var(--ink-soft) }
+
+  /* El destacado se marca con el BORDE, no con una superficie. Esta banda ya
+     lleva degradado claro, y una tarjeta en --marca-suave encima se perderia
+     justo en la esquina donde el degradado arranca en ese mismo color. El
+     borde en --marca-text no depende del fondo. Y el color solo no basta: lo
+     que de verdad distingue a esta tarjeta es que lleva a algun sitio. */
+  .tarjeta.clave { border-color: var(--marca-text) }
+  .ir { font-family: var(--font-datos); font-size: var(--step--1); justify-self: start; margin-top: var(--s-1) }
   .mas { font-family: var(--font-datos); font-size: var(--step--1) }
 
   /* Se come el margen superior del pie. Sin esto quedaba una franja blanca de

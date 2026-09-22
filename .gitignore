@@ -10,3 +10,13 @@ dist/
 
 # Perfiles temporales que deja Chrome headless al medir.
 _perfil*/
+
+# Skills de Claude Code, ahora a nivel de proyecto. Son herramienta personal,
+# no entregable: una es el sistema de diseno de OTRO cliente (dentco-design) y
+# varias son de terceros con su propia licencia. Quita estas dos lineas si
+# quieres que viajen con el repo.
+.claude/skills/
+.claude/skills-archivo/
+
+# Permisos locales de Claude Code, propios de esta maquina.
+.claude/settings.local.json

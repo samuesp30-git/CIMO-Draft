@@ -243,7 +243,11 @@ const pasos = [
     padding: var(--s-4);
     display: grid;
     grid-template-columns: 1fr auto;
-    align-items: center;
+    /* `end` y no `center`: el párrafo ocupa cuatro líneas y el enlace una, así
+       que centrado quedaba a la altura de la tercera línea, flotando en mitad
+       de la caja con hueco arriba y abajo. Alineado abajo cae donde termina de
+       leerse el párrafo, que es donde uno decide si sigue. */
+    align-items: end;
     column-gap: var(--s-4);
     row-gap: var(--s-2);
   }

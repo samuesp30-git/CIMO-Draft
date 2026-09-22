@@ -98,8 +98,25 @@ import IconoEsp from '../components/IconoEsp.astro';
      parecía un trozo de la franja y no el primer elemento de otra cosa. Con el
      destacado en oscuro se notaba más todavía: dos superficies distintas
      tocándose sin junta. */
-  .lista { display: grid; gap: 0; padding-block: var(--s-4) }
+  /* LOS CUATRO SECUNDARIOS VAN EN DOS COLUMNAS. En una sola, cada servicio
+     ocupaba la medida de lectura —66ch, unos 470 px— dentro de un contenedor de
+     1.136, con la regla de 1 px cruzando los 1.136 enteros. O sea: un filete a
+     todo lo ancho con el texto en el 40 % izquierdo y el 60 % restante vacío,
+     cuatro veces seguidas. El hueco no era un error de medida —66ch es la
+     medida correcta para leer— sino de composición: dos medidas de lectura
+     caben una al lado de la otra donde solo había una.
+
+     El destacado NO entra en la rejilla: sigue a todo lo ancho. Esa es ahora la
+     diferencia que se ve primero, antes incluso que el color. */
+  .lista {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--s-5);
+    row-gap: 0;
+    padding-block: var(--s-4);
+  }
   .servicio { border-top: 1px solid var(--line); padding-block: var(--s-4) }
+  .servicio.clave { grid-column: 1 / -1 }
   /* scroll-margin para que el ancla no quede debajo de la cabecera pegajosa */
   .servicio { scroll-margin-top: calc(var(--cabecera-alto) + var(--s-2)) }
   .texto { display: grid; gap: var(--s-2) }
@@ -154,6 +171,12 @@ import IconoEsp from '../components/IconoEsp.astro';
   .servicio.clave h2 { color: var(--base) }
   .servicio.clave .resumen,
   .servicio.clave p { color: var(--sobre-oscuro) }
+
+  /* Por debajo de 60rem las dos columnas no caben: el titular va a --step-4 y
+     con el icono al lado se parte en tres lineas. Vuelve a la pila. */
+  @media (max-width: 60rem) {
+    .lista { grid-template-columns: 1fr }
+  }
 
 
 </style>
