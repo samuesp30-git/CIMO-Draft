@@ -22,22 +22,21 @@
   },
   {
     "id": "fotografia",
-    "titulo": "Fotografía propia de la clínica y del equipo",
-    "detalle": "No se generan imágenes ni se usan bancos: una clínica que enseña un consultorio que no es el suyo está mintiendo sobre lo que el paciente va a encontrar.",
+    "titulo": "Fotografía propia de la portada",
+    "detalle": "El equipo ya está resuelto: en noviembre de 2026 la clínica entregó ocho retratos en sus consultorios y dos grupales, y con eso se montó la página de Especialidades y la franja del inicio. Lo que sigue faltando es la portada, que hoy lleva una imagen generada con IA, y la sede: sala de espera, recepción, fachada. No se generan imágenes ni se usan bancos para eso: una clínica que enseña un consultorio que no es el suyo está mintiendo sobre lo que el paciente va a encontrar.",
     "bloquea": [
       "portada",
-      "página de servicios",
       "contacto"
     ],
     "marcador": true,
     "texto": "Fotografía de la clínica pendiente del cliente"
   },
   {
-    "id": "especialistas",
-    "titulo": "Nómina de especialistas",
-    "detalle": "Solo consta públicamente la Dra. Marta Muñoz. Hace falta nombre, especialidad, número de colegiado y foto de cada uno.",
+    "id": "colegiacion",
+    "titulo": "Números de colegiación del equipo",
+    "detalle": "La nómina llegó en noviembre de 2026: ocho especialistas con nombre, especialidad y foto, y la sección está construida. Lo único que falta de cada uno es el número de colegiado, que es lo que pediría un directorio médico y lo que permite comprobar una credencial.",
     "bloquea": [
-      "sección de especialistas — no construida"
+      "credencial en la ficha de cada doctor"
     ],
     "marcador": false
   },

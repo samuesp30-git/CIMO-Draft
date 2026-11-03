@@ -15,7 +15,11 @@ const { actual } = Astro.props;
 
 const enlaces = [
   ['index.html', 'Inicio', 'inicio'],
-  ['servicios.html', 'Servicios', 'servicios'],
+  // El archivo sigue llamandose servicios.html aunque la pagina ya no sea un
+  // catalogo de tratamientos sino la nomina del equipo: renombrarlo romperia lo
+  // que haya indexado y los enlaces que el cliente ya haya repartido. Lo que
+  // cambia es el rotulo, que es lo que lee el paciente.
+  ['servicios.html', 'Especialidades', 'servicios'],
   ['invisalign.html', 'Invisalign', 'invisalign'],
   ['preguntas.html', 'Preguntas', 'preguntas'],
   ['contacto.html', 'Contacto', 'contacto'],

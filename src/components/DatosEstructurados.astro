@@ -1,5 +1,6 @@
 ---
 import clinica from '../data/clinica.json';
+import doctores from '../data/doctores.json';
 
 // JSON-LD. Lo que un buscador lee para saber que esto es una clínica dental de
 // Tegucigalpa con un horario concreto.
@@ -57,6 +58,28 @@ const datos = {
     { '@type': 'MedicalProcedure', name: 'Odontopediatría' },
     { '@type': 'MedicalProcedure', name: 'Rehabilitación estética' },
   ],
+  // EL PERSONAL, desde noviembre de 2026. Hasta entonces esto estaba vacío por
+  // el mismo motivo que sigue vacío `review`: no constaba. Ahora la nómina la
+  // da la clínica, los ocho salen con cara y nombre en la página, y lo que se
+  // declara aquí es exactamente lo que se ve — que es la condición de Google
+  // para el marcado y, antes que eso, la de este proyecto.
+  //
+  // `Person` y `jobTitle`, NO `Dentist` ni `Physician` con `medicalSpecialty`.
+  // Es contraintuitivo y conviene dejarlo escrito: en schema.org, `Dentist` y
+  // `Physician` son tipos de NEGOCIO —subtipos de MedicalBusiness—, no de
+  // persona. Declarar `employee: [{'@type':'Dentist'}]` diría que esta clínica
+  // emplea a ocho clínicas. Lo que emplea son ocho personas, y la especialidad
+  // de una persona es su `jobTitle`.
+  //
+  // `image` en absoluto y no en relativo: el resto del sitio escribe las rutas
+  // sin barra inicial para poder abrirse desde file://, pero un buscador no
+  // resuelve una ruta relativa dentro de un JSON-LD contra la página.
+  employee: doctores.map((d) => ({
+    '@type': 'Person',
+    name: d.nombre,
+    jobTitle: d.especialidad,
+    image: new URL(`img/${d.foto}.webp`, url).href,
+  })),
 };
 ---
 

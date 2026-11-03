@@ -4,74 +4,217 @@ import Base from '../layouts/Base.astro';
 import Titular from '../components/Titular.astro';
 import Boton from '../components/Boton.astro';
 import servicios from '../data/servicios.json';
+import doctores from '../data/doctores.json';
+import fotos from '../data/fotos.json';
 import IconoEsp from '../components/IconoEsp.astro';
 
-// Cinco servicios, una página, anclas a #slug.
+// ESTA PÁGINA YA NO VA DE TRATAMIENTOS, VA DE PERSONAS.
 //
-// El prototipo tenía chips que filtraban la lista. Aquí no filtran: son anclas.
-// Con cinco elementos, todos visibles a la vez, un filtro no reduce nada — es
-// un control que parece hacer algo y no hace nada. Además un ancla se indexa,
-// funciona sin JavaScript y se puede compartir.
+// Hasta noviembre de 2026 listaba cinco servicios sacados de las publicaciones
+// públicas de la clínica, porque era lo único que constaba: la nómina del
+// equipo estaba en pendientes.json y no había una sola cara que enseñar. El
+// cliente entregó las fotos y la lista de quién lleva cada especialidad, y eso
+// es un dato de más peso que una investigación de Instagram — lo dice la
+// clínica de sí misma, no lo deduce nadie.
+//
+// Qué se conserva y por qué: INVISALIGN. Es el único servicio con página
+// propia, con un escáner detrás que ninguna otra clínica de Tegucigalpa tiene y
+// con una ruta comercial entera montada encima. Quitarlo de aquí habría dejado
+// esa página sin entrada desde la lista. Los otros cuatro no desaparecen del
+// sitio: brackets, limpieza y rehabilitación estética se nombran dentro de la
+// línea de la especialidad que los cubre, que es donde un paciente los busca.
+// servicios.json NO se toca: conserva la procedencia investigada de los cinco.
+
+const invisalign = servicios.find((s) => s.destacado);
+if (!invisalign) throw new Error('servicios.json: ningún servicio marcado como destacado');
+
+// EL ANCLA VA EN LA PRIMERA FICHA DE CADA ESPECIALIDAD, no en todas. Endodoncia
+// la llevan dos doctoras y odontología general otros dos doctores; si las dos
+// fichas llevaran id="endodoncia" el documento tendría ids repetidos y el
+// navegador saltaría a la primera sin avisar de nada. Aquí se decide una vez y
+// se sabe cuál es.
+const vistas = new Set<string>();
+const fichas = doctores.map((d) => {
+  const ancla = vistas.has(d.especialidadSlug) ? undefined : d.especialidadSlug;
+  vistas.add(d.especialidadSlug);
+  return { ...d, ancla };
+});
+const especialidades = fichas
+  .filter((d) => d.ancla)
+  .map((d) => ({ slug: d.especialidadSlug, nombre: d.especialidad }));
+
+// MISMO CRITERIO QUE PortadaFoto E IconoEsp: el alt y la procedencia de cada
+// foto viven en fotos.json, y una foto sin declarar REVIENTA LA COMPILACIÓN en
+// vez de salir con el alt vacío. La comprobación 22 de `verificar` caza lo
+// mismo en el HTML ya compilado, pero para entonces ya se ha subido.
+const foto = (id: string) => {
+  const f = fotos.find((x) => x.id === id);
+  if (!f) throw new Error(`la foto "${id}" no está declarada en src/data/fotos.json`);
+  return f;
+};
 ---
 
 <Base
-  titulo="Servicios"
-  descripcion="Ortodoncia invisible con Invisalign, brackets, higiene y prevención, odontopediatría y rehabilitación estética en Tegucigalpa."
+  titulo="Especialidades"
+  descripcion="Los ocho especialistas de CIMO en Tegucigalpa: odontología general, endodoncia, ortodoncia, cirugía maxilofacial, odontopediatría y periodoncia."
   actual="servicios"
 >
   <section class="cabeza-fondo">
     <div class="contenedor cabeza">
-      <Titular nivel={1} previo="Servicios" resalte="salud bucal">Especialistas en</Titular>
-      <nav class="anclas" aria-label="Ir a un servicio">
-        {servicios.map((s) => <a href={`#${s.slug}`}>{s.nombre}</a>)}
+      <Titular nivel={1} previo="Especialidades" resalte="te atiende">Quién</Titular>
+      {/* Los chips no filtran: son anclas. Con seis especialidades visibles a la
+          vez un filtro no reduce nada — es un control que parece hacer algo y no
+          hace nada. Un ancla, además, se indexa, funciona sin JavaScript y se
+          puede compartir: «mira, la de endodoncia es esta». */}
+      <nav class="anclas" aria-label="Ir a una especialidad">
+        {especialidades.map((e) => <a href={`#${e.slug}`}>{e.nombre}</a>)}
       </nav>
     </div>
   </section>
 
-  <div class="contenedor lista">
-    {servicios.map((s) => (
-      <article class:list={['servicio', { clave: s.destacado }]} id={s.slug}>
-        <div class="texto">
-          <h2>
-            {/* El icono va DENTRO del h2, en línea con el nombre.
-                Con la lámina de discos 3D no se podía: a 30px se reducían los
-                cinco a un disco azul con una mancha blanca y hubo que sacarlos
-                a bloque propio a 56. Estos son de línea y leen de sobra en
-                línea, así que el icono vuelve a su sitio — al lado del nombre,
-                no encima. Comprobado a 28, 36 y 48; se dejó en 44, donde el
-                detalle del trazo se distingue sin que el icono le gane el peso
-                al titular (~33px de caja alta).
-                alt vacío a propósito: el nombre del servicio está justo al
-                lado, en el propio titular. Describir el icono haría que un
-                lector de pantalla dijera el servicio dos veces. */}
-            {'iconoEsp' in s && <IconoEsp nombre={s.iconoEsp} tamano={44} alt="" tono={s.destacado ? 'claro' : 'oscuro'} />}
-            <span>{s.nombre}</span>
-          </h2>
-          <p class="resumen">{s.resumen}</p>
-          <p>{s.descripcion}</p>
-          {s.destacado && s.pagina && (
-            <p class="mas"><Boton variante="claro" href={s.pagina}>Ver la página de Invisalign</Boton></p>
-          )}
-        </div>
-      </article>
-    ))}
+  <div class="contenedor destacado">
+    <article class="servicio clave" id={invisalign.slug}>
+      <div class="texto">
+        <h2>
+          {/* El icono va DENTRO del h2, en línea con el nombre. A 44 px: se
+              probó a 28, 36 y 48 y es donde el trazo se distingue sin ganarle el
+              peso al titular.
+              alt vacío a propósito: el nombre del servicio está justo al lado.
+              Describir el icono haría que un lector de pantalla dijera el
+              servicio dos veces. */}
+          {'iconoEsp' in invisalign && <IconoEsp nombre={invisalign.iconoEsp} tamano={44} alt="" tono="claro" />}
+          <span>{invisalign.nombre}</span>
+        </h2>
+        <p class="resumen">{invisalign.resumen}</p>
+        <p>{invisalign.descripcion}</p>
+        {invisalign.pagina && (
+          <p class="mas"><Boton variante="claro" href={invisalign.pagina}>Ver la página de Invisalign</Boton></p>
+        )}
+      </div>
+    </article>
   </div>
+
+  <section class="equipo">
+    <div class="contenedor cabeza-equipo">
+      <Titular nivel={2} previo="Equipo" resalte="y especialidades" class="revelable">Doctores</Titular>
+    </div>
+
+    {/* AQUI ABRIA LA FOTO GRUPAL, y se ha ido por calidad, no por composición.
+        El original que entregó la clínica mide 853 px de ancho —tamaño de
+        WhatsApp, no de cámara— y la banda lo estiraba hasta 1136: la única
+        imagen de todo el sitio que se ampliaba, y se notaba. El recorte sigue
+        declarado en fotos.json y el .webp sigue generado, así que vuelve en
+        cuanto la clínica mande el archivo del fotógrafo. */}
+
+    {/* UNA FILA POR DOCTOR, A ANCHO DE PANTALLA. Antes eran ocho fichas en una
+        rejilla de cuatro columnas, y el cliente lo describió con una palabra
+        exacta: «pequeñas facetas». A 250 px un retrato es un avatar, y la
+        clínica tenía fotos de cuerpo entero hechas en su propia sede. Así que la
+        cara deja de ser una miniatura dentro de una tarjeta: 340 px de ancho por
+        510 de alto, 2:3, la foto tal como la encuadraron. Aquí tampoco hay icono
+        de especialidad — el icono sirve para distinguir cinco tratamientos
+        abstractos; para distinguir a ocho personas ya existe su cara.
+
+        LA DIAGONAL ES LA MISMA EN LAS OCHO y siempre mira al texto: en las filas
+        con la foto a la izquierda corta la esquina de abajo, y en las de la
+        derecha la de arriba. Al ser la misma inclinación, las ocho quedan
+        paralelas y se leen como un recurso del sitio y no como ocho recortes
+        distintos. Es lo único que rompe el rectángulo, y por eso la foto no
+        lleva borde, ni sombra, ni esquina redondeada: cuatro remates compitiendo
+        en el mismo canto no dejarían ver ninguno.
+
+        EL CELESTE SE INTERCALA, no se reparte a todas las bandas: las filas
+        pares van sobre un degradado de celeste a blanco y las impares sobre
+        blanco con filete. Y el degradado se voltea cada dos bandas de color, así
+        que el celeste entra por la izquierda, luego por la derecha, luego otra
+        vez por la izquierda. El mismo degradado ocho veces sería un fondo;
+        alternándolo, es un ritmo.
+
+        LA ESPECIALIDAD PESA MÁS QUE SU EXPLICACIÓN, por indicación del cliente:
+        va en Jost a --step-2 con el filete de marca encima, y la línea que la
+        explica a --step-0 en tinta secundaria. Son dos familias distintas y unos
+        nueve píxeles de cuerpo de diferencia. El nombre del doctor sigue siendo
+        el titular de su fila, pero lo que se distingue al barrer la página en
+        vertical es la columna de especialidades.
+
+        LAS BURBUJAS SON LOS PROCEDIMIENTOS DE ESA ESPECIALIDAD. Van en blanco
+        con el contorno en --text-marca, que es EL MISMO azul de la especialidad
+        y de su propia letra: aquí no entra un tono nuevo. Así la fila se lee en
+        tres pasos —el celeste del fondo, el blanco de la burbuja, el azul del
+        borde y del texto— y en las bandas sin color la burbuja sigue siendo la
+        misma pieza, porque lo único que la dibuja es ese contorno. Un celeste
+        claro en el borde, que fue lo primero que se probó, se perdía justo en el
+        tramo donde el degradado todavía tiene color.
+
+        NO SON BOTONES, aunque de lejos lo parezcan: son los <li> de una lista,
+        sin enlace y sin hover. Comparten forma y medidas con los chips de
+        `.anclas` de arriba a propósito —una sola forma de píldora en la página—,
+        pero aquellos van rellenos de superficie de marca y estos van en blanco
+        con el aro oscuro, que es lo que los separa.
+
+        LO QUE DICE CADA BURBUJA SALE DE doctores.json, y lo que está escrito ahí
+        son procedimientos definitorios de la especialidad o términos que ya
+        venían en la línea del propio doctor (el sarro del Dr. Pineda, los
+        cordales de la Dra. Meza, los brackets de la Dra. Portillo). FALTA QUE LA
+        CLÍNICA DÉ SU LISTA. Hasta que llegue, aquí no entra nada que el wiki
+        tenga sin confirmar: ni implantes, ni blanqueamiento, ni extracciones
+        fuera de los cordales, que son los tres que siguen sin contestar.
+
+        NO HAY BOTÓN DE CITA POR DOCTOR, y es una decisión del cliente, no un
+        olvido: en CIMO el paciente no elige especialista, la clínica asigna
+        según el caso. Una tarjeta con «escribir a la Dra. X» prometería una
+        elección que no existe, y ocho llamadas a la acción compitiendo entre sí
+        tampoco dejarían ver las caras. La única invitación de la página es la
+        banda de cierre, que es la de siempre. */}
+    <div class="filas">
+      {fichas.map((d, i) => {
+        const f = foto(d.foto);
+        return (
+          <article
+            class:list={['fila', { derecha: i % 2 === 1, color: i % 2 === 0, volteado: i % 4 === 2 }]}
+            id={d.ancla}
+          >
+            <div class="contenedor dentro">
+              <img
+                class="retrato"
+                src={`img/${f.id}.webp`}
+                srcset={`img/${f.id}-sm.webp 340w, img/${f.id}.webp 680w`}
+                sizes="(max-width: 60rem) calc(100vw - 3rem), 340px"
+                alt={f.alt}
+                width="680"
+                height="1020"
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="datos">
+                <h3>{d.nombre}</h3>
+                <p class="esp">{d.especialidad}</p>
+                <p class="linea">{d.linea}</p>
+                <ul class="procs">
+                  {d.procedimientos.map((p) => <li>{p}</li>)}
+                </ul>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
 
   <BandaCierre>¿No estás seguro de qué necesitas? Escríbenos y lo vemos en una valoración.</BandaCierre>
 </Base>
 
 <style>
-  /* LA CABECERA DEJA DE SER BLANCA. Esta página era blanca de arriba abajo y
-     era la más plana del sitio: cinco artículos separados por una línea de 1 px
-     y nada más. Ahora abre sobre una superficie y cierra con la banda oscura,
-     que es el mismo ritmo claro-oscuro que ya tenía el inicio.
+  /* LA CABECERA NO ES BLANCA. Esta página era blanca de arriba abajo y era la
+     más plana del sitio. Ahora abre sobre una superficie y cierra con la banda
+     oscura, que es el mismo ritmo claro-oscuro que ya tenía el inicio.
 
      El lavado sale de originales/haikei-degradado.png, ACLARADO UN 68 %: tal
      cual venía, su punto más oscuro dejaba a --oro-text —el color del rótulo
      que va justo aquí— en 3.54:1. Ver scripts/tramas.mjs para el cálculo.
 
-     El color sólido va debajo por la regla de siempre: si el .webp no carga,
-     el texto no puede acabar sobre nada. */
+     El color sólido va debajo por la regla de siempre: si el .webp no carga, el
+     texto no puede acabar sobre nada. */
   .cabeza-fondo {
     background-color: var(--marca-tenue);
     background-image: url('img/lavado.webp');
@@ -93,90 +236,183 @@ import IconoEsp from '../components/IconoEsp.astro';
   }
   .anclas a:hover { border-color: var(--marca-text); color: var(--ink) }
 
-  /* AIRE ENTRE LA FRANJA Y LA LISTA. La cabecera lavada terminaba en su borde y
-     el primer servicio empezaba pegado a él, así que la tarjeta destacada
-     parecía un trozo de la franja y no el primer elemento de otra cosa. Con el
-     destacado en oscuro se notaba más todavía: dos superficies distintas
-     tocándose sin junta. */
-  /* LOS CUATRO SECUNDARIOS VAN EN DOS COLUMNAS. En una sola, cada servicio
-     ocupaba la medida de lectura —66ch, unos 470 px— dentro de un contenedor de
-     1.136, con la regla de 1 px cruzando los 1.136 enteros. O sea: un filete a
-     todo lo ancho con el texto en el 40 % izquierdo y el 60 % restante vacío,
-     cuatro veces seguidas. El hueco no era un error de medida —66ch es la
-     medida correcta para leer— sino de composición: dos medidas de lectura
-     caben una al lado de la otra donde solo había una.
-
-     El destacado NO entra en la rejilla: sigue a todo lo ancho. Esa es ahora la
-     diferencia que se ve primero, antes incluso que el color. */
-  .lista {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: var(--s-5);
-    row-gap: 0;
-    padding-block: var(--s-4);
-  }
-  .servicio { border-top: 1px solid var(--line); padding-block: var(--s-4) }
-  .servicio.clave { grid-column: 1 / -1 }
-  /* scroll-margin para que el ancla no quede debajo de la cabecera pegajosa */
-  .servicio { scroll-margin-top: calc(var(--cabecera-alto) + var(--s-2)) }
+  /* AIRE ENTRE LA FRANJA Y LO QUE SIGUE. La cabecera lavada terminaba en su
+     borde y el destacado empezaba pegado a él, así que parecía un trozo de la
+     franja y no otra cosa. Con el destacado en oscuro se nota más: dos
+     superficies distintas tocándose sin junta. */
+  .destacado { padding-block: var(--s-4) }
   .texto { display: grid; gap: var(--s-2) }
 
-  /* EL TITULAR, A SU TAMAÑO REAL. Estaba a --step-3, que es el h3 del sistema:
-     los cinco servicios —que son el asunto entero de esta página— se componían
-     un escalón por debajo de lo que este sistema llama un h2. El titular de la
-     cabecera sí iba a tamaño completo, así que la página abría fuerte y bajaba
-     la voz justo donde estaba su contenido.
-
-     El icono NO crece con él. Está en 44 px porque se probó a 28, 36 y 48 y es
-     donde el trazo se distingue sin ganarle el peso al titular; al subir el
-     titular, el icono pesa relativamente menos, que es la dirección correcta.
+  /* EL TITULAR, A SU TAMAÑO REAL: --step-4, que es lo que este sistema llama un
+     h2. El icono NO crece con él; se queda en 44 px, así que al subir el titular
+     pesa relativamente menos, que es la dirección correcta.
 
      `align-items: center` y no `baseline`: una imagen no tiene línea base
      tipográfica, así que con baseline se cuelga por debajo del texto. */
   .servicio h2 { font-size: var(--step-4); display: flex; align-items: center; gap: 0.45em }
   .resumen { font-size: var(--step-1); color: var(--ink-soft) }
   .mas { margin-top: var(--s-1) }
+  .servicio { scroll-margin-top: calc(var(--cabecera-alto) + var(--s-2)) }
 
-  /* EL DESTACADO ES EL PICO DE LA LISTA, no uno más con un enlace al final.
-     servicios.json lo marca desde el dato —es el único con `destacado` y el
-     único con página propia— y la página trataba a los cinco igual: mismo
-     cuerpo, misma línea de 1 px, y toda la diferencia reducida a un enlace de
-     texto al pie del bloque.
+  /* INVISALIGN ES EL PICO DE LA PÁGINA. Era el único de los cinco servicios con
+     página propia y ahora es el único que conserva bloque, así que su tamaño ya
+     no compite con nada: es lo primero que se ve después del titular.
 
-     Lo que cambia es la DENSIDAD, no solo el tamaño: superficie propia, aire
-     alrededor y el botón sólido del sistema en vez del enlace. Cinco cosas
-     iguales no tienen lectura; con un pico se ve de un vistazo por dónde
-     empezar.
+     VA SOBRE OSCURO, por decisión del cliente: pidió #1F3945. Ese color YA
+     ESTABA en el sistema —es --ink-marino (#1E3A47), del que difiere en 1, -1 y
+     -2 por canal y con el que da 1.01:1 de contraste—, así que se usa el token y
+     no el literal, para no duplicar un valor que ya tiene nombre.
 
-     VA SOBRE OSCURO, por decisión del cliente: pidió #1F3945 para resaltarlo.
-     Ese color YA ESTABA en el sistema — es --ink-marino (#1E3A47), del que
-     difiere en 1, -1 y -2 por canal y con el que da 1.01:1 de contraste, o sea
-     que son el mismo color. Se usa el token y no el literal para no duplicar un
-     valor que ya tiene nombre y procedencia.
-
-     Lo que el color obliga a resolver: el icono de especialidad es un mapa de
-     bits con el color aplicado al generarlo, y la tinta normal (--marca-text)
-     sobre este fondo da 2.13:1 — desaparece. Por eso scripts/iconos-simbolos.mjs
-     emite ahora una variante teñida en --marca, que sobre este fondo da 5.53:1,
-     y solo para el servicio destacado. Y el botón pasa de `cta` (tinta sólida) a
-     `claro` (blanco sólido), que es el par que el sistema ya usa sobre oscuro en
-     las bandas de cierre. */
+     Lo que el color obliga a resolver: el icono es un mapa de bits con el color
+     aplicado al generarlo, y la tinta normal (--marca-text) sobre este fondo da
+     2.13:1 — desaparece. Por eso scripts/iconos-simbolos.mjs emite una variante
+     teñida en --marca, que aquí da 5.53:1. Y el botón pasa de `cta` (tinta
+     sólida) a `claro` (blanco sólido), que es el par que el sistema ya usa sobre
+     oscuro en las bandas de cierre. */
   .servicio.clave {
     background-color: var(--ink-marino);
-    border-top-color: transparent;
     border-radius: var(--radius);
     padding: var(--s-4);
-    margin-bottom: var(--s-3);
   }
   .servicio.clave h2 { color: var(--base) }
   .servicio.clave .resumen,
   .servicio.clave p { color: var(--sobre-oscuro) }
 
-  /* Por debajo de 60rem las dos columnas no caben: el titular va a --step-4 y
-     con el icono al lado se parte en tres lineas. Vuelve a la pila. */
-  @media (max-width: 60rem) {
-    .lista { grid-template-columns: 1fr }
+  /* LA SECCIÓN DEL EQUIPO NO TIENE CONTENEDOR PROPIO, y es a propósito: cada
+     fila se pinta a ancho de pantalla y mete su propio `.contenedor` dentro.
+     Es la única forma de que la banda de color llegue a los dos bordes del
+     navegador mientras el texto sigue alineado con el del resto del sitio. */
+  .equipo { padding-top: var(--s-5) }
+  .cabeza-equipo { padding-bottom: var(--s-4) }
+
+  .fila { scroll-margin-top: calc(var(--cabecera-alto) + var(--s-2)) }
+  .dentro { display: flex; align-items: center; gap: var(--s-4); padding-block: var(--s-4) }
+  .fila.derecha .dentro { flex-direction: row-reverse }
+
+  /* LOS DOS EXTREMOS DEL DEGRADADO SON FONDOS YA VERIFICADOS —--marca-suave,
+     --marca-tenue y --base—, que es la condición que tokens.css §2 le pone a
+     cualquier degradado con texto encima: si los dos extremos pasan contraste
+     por separado, todo punto intermedio pasa, porque la luminancia entre dos
+     paradas es monótona. Por eso aquí no se inventa ni un celeste nuevo; se
+     usan los tres que ya tienen nombre.
+
+     --marca-suave SE SOSTIENE HASTA EL 26 %, no es una sola parada en el 0:
+     con la parada suelta, el celeste era un punto en la esquina y a 1280 px de
+     banda la página entera volvía a leerse blanca otra vez, que es justo lo que
+     el cliente pidió corregir. El 26 % es el ancho que ocupa la foto, así que
+     el color cubre un lado entero de la banda y muere en el otro: en las de
+     color a secas el lado de la foto, y en las `volteado` el del texto. */
+  .fila.color {
+    background-image: linear-gradient(104deg, var(--marca-suave) 0%, var(--marca-suave) 26%, var(--marca-tenue) 64%, var(--base) 100%);
+  }
+  .fila.color.volteado {
+    background-image: linear-gradient(256deg, var(--marca-suave) 0%, var(--marca-suave) 26%, var(--marca-tenue) 64%, var(--base) 100%);
+  }
+  /* La fila blanca va entre dos degradados que mueren en blanco, así que sin
+     filete no habría junta: las tres superficies se fundirían en una sola. El
+     último no se dibuja, porque debajo ya está la banda de cierre. */
+  .fila:not(.color) { border-block: var(--borde) }
+  .fila:last-child { border-bottom: 0 }
+
+  /* `aspect-ratio` Y ADEMÁS width/height en el HTML: el atributo reserva el
+     hueco antes de que llegue el .webp —que es lo que evita el salto de
+     maquetación— y la regla garantiza que las ocho filas midan lo mismo aunque
+     un recorte salga con un píxel de diferencia. */
+  .retrato {
+    width: 21.25rem;
+    flex: none;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    display: block;
+    clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);
+  }
+  .fila.derecha .retrato { clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%) }
+
+  .datos { display: grid; gap: var(--s-2) }
+  .fila.derecha .datos { justify-items: end; text-align: right }
+
+  /* El filete va en --marca a secas, que es RELLENO CIEGO y no texto: 2.20:1
+     sobre blanco no es contraste de lectura, pero aquí no hay nada que leer.
+     Es la misma licencia que tokens.css §2 le da a --degradado-marca. */
+  .esp {
+    position: relative;
+    padding-top: calc(3px + var(--s-1));
+    font-family: var(--font-datos);
+    font-size: var(--step-2);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text-marca);
+  }
+  .esp::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.5rem;
+    height: 3px;
+    background: var(--relleno-marca);
+  }
+  .fila.derecha .esp::before { left: auto; right: 0 }
+
+  .linea { font-size: var(--step-0); color: var(--text-secundario); max-width: 44ch }
+
+  /* MISMAS MEDIDAS QUE `.anclas a`: cuerpo, familia, radio y relleno salen de
+     allí para que la página tenga UNA forma de píldora y no dos parecidas. Lo
+     que cambia es la piel —aquellos llevan superficie de marca y borde
+     transparente, estos blanco y aro oscuro—, y eso basta para que no se
+     confundan con algo clicable.
+
+     El aro va en --text-marca, el token de la especialidad: 5.70:1 sobre blanco,
+     así que la letra de dentro pasa de sobra a --step--1. Y 500 en vez de 400
+     porque a este cuerpo, con el aro oscuro alrededor, Jost en regular se queda
+     fino.
+
+     EL TOPE ES 30rem Y NO LOS 44ch DE LA LÍNEA. Con la medida de la prosa, seis
+     de las ocho listas partían en dos renglones y dejaban una burbuja suelta
+     abajo; a 30rem seis entran de un tirón y solo la Dra. Meza y el Dr. Pineda
+     envuelven, que son los que llevan los nombres más largos. Suelto del todo
+     tampoco vale: la columna de texto se ensancha hasta donde llegue la fila de
+     burbujas y cada doctor acaba con un bloque de un ancho distinto. */
+  .procs {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-1);
+    max-width: 30rem;
+  }
+  .fila.derecha .procs { justify-content: flex-end }
+  .procs li {
+    font-family: var(--font-datos);
+    font-size: var(--step--1);
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--text-marca);
+    background: var(--base);
+    border: 1px solid var(--text-marca);
+    border-radius: var(--radius-chip);
+    padding: 0.4375rem 0.875rem;
   }
 
-
+  /* Apilado, la foto pasa a ancho completo y la diagonal se tumba: un corte del
+     18 % del ancho era una esquina en una foto de 340 px, pero en una de 340 a
+     ancho de pantalla se comería un brazo. Y el degradado se endereza: a 104°
+     sobre una banda alta y estrecha el celeste cruzaba en diagonal por encima
+     del texto en vez de quedarse detrás de la foto. */
+  @media (max-width: 60rem) {
+    .dentro,
+    .fila.derecha .dentro { flex-direction: column; align-items: stretch; gap: var(--s-3) }
+    .retrato { width: 100% }
+    .retrato,
+    .fila.derecha .retrato { clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%) }
+    .fila.derecha .datos { justify-items: start; text-align: left }
+    .fila.derecha .procs { justify-content: flex-start }
+    .fila.color {
+      background-image: linear-gradient(166deg, var(--marca-suave) 0%, var(--marca-suave) 26%, var(--marca-tenue) 64%, var(--base) 100%);
+    }
+    .fila.color.volteado {
+      background-image: linear-gradient(194deg, var(--marca-suave) 0%, var(--marca-suave) 26%, var(--marca-tenue) 64%, var(--base) 100%);
+    }
+  }
 </style>

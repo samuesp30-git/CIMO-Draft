@@ -27,6 +27,7 @@ const INTERNAS = ['404.html'];        // se le comprueba lo estructural, se le p
 const clinica = JSON.parse(readFileSync('src/data/clinica.json', 'utf8'));
 const pendientes = JSON.parse(readFileSync('src/data/pendientes.json', 'utf8'));
 const fotos = JSON.parse(readFileSync('src/data/fotos.json', 'utf8'));
+const doctores = JSON.parse(readFileSync('src/data/doctores.json', 'utf8'));
 const sede = clinica.sedes[0];
 const NUMERO = clinica.whatsapp.numero;
 const TEL = clinica.telefono.href;
@@ -237,11 +238,24 @@ for (const [f, s] of Object.entries(doc)) {
 }
 
 // ── 18. nada inventado
+const equipo = doctores.map((d) => d.nombre.normalize('NFC'));
 for (const [f, s] of Object.entries(doc)) {
   if (/aggregateRating|"review"/.test(s)) F(`${f}: JSON-LD con valoraciones — CIMO tiene CERO resenas publicas`);
-  // el unico nombre propio verificable del equipo
+  // LOS NOMBRES VERIFICABLES DEL EQUIPO SON LOS DE doctores.json, y ninguno
+  // mas. Hasta noviembre de 2026 aqui habia UN nombre escrito a mano —la Dra.
+  // Marta Munoz, la unica que constaba publicamente— y esta comprobacion
+  // fallaba ante cualquier otro. Sigue fallando ante cualquier otro: lo unico
+  // que cambia es que la lista de quien no es invencion la da la nomina que
+  // entrego la clinica, no una constante de este archivo.
+  //
+  // La captura se queda en dos palabras («Dra. Ana Lucia»), asi que se comparan
+  // por prefijo en los dos sentidos; y se normaliza a NFC porque una ñ o una í
+  // pueden venir descompuestas y entonces dos cadenas identicas en pantalla no
+  // son iguales en memoria.
   for (const m of s.matchAll(/\bDra?\.\s+([A-ZÁÉÍÓÚÑ][\wáéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][\wáéíóúñ]+)?)/g)) {
-    if (!/Marta Mu(ñ|&#241;)oz/.test(m[0])) F(`${f}: nombre de doctor no verificado: "${m[0]}"`);
+    const visto = m[0].replace(/&#241;/g, 'ñ').normalize('NFC');
+    const consta = equipo.some((n) => n.startsWith(visto) || visto.startsWith(n));
+    if (!consta) F(`${f}: nombre de doctor no verificado: "${m[0]}"`);
   }
   for (const m of s.matchAll(/data-marcador="([^"]*)"[^>]*aria-label="([^"]*)"/g)) {
     if (!m[2].trim()) F(`${f}: hay un Marcador sin texto de lo que falta`);
@@ -332,6 +346,14 @@ for (const f of fotos) {
   if (f.fuente === 'IA') {
     const nota = String(f.nota || '').toUpperCase();
     if (!nota.includes(' IA') && !nota.includes('IA ')) F(`fotos.json: "${f.id}" es de IA y su nota no lo dice`);
+  } else if (f.fuente === 'Cliente') {
+    // Una foto propia del cliente tampoco tiene enlace de origen que comprobar:
+    // su origen es que la mandó el. Lo que se le exige en su lugar es lo mismo
+    // que a las de IA —que la nota lo DIGA— para que dentro de un ano nadie
+    // tenga que adivinar si esa cara salio de un banco de imagenes o de la
+    // clinica. Es la diferencia entre poder ensenar un consultorio y no poder.
+    const nota = String(f.nota || '').toUpperCase();
+    if (!nota.includes('ENTREGADA')) F(`fotos.json: "${f.id}" es del cliente y su nota no dice que la entrego`);
   } else if (!f.url) {
     F(`fotos.json: "${f.id}" sin url de origen`);
   }

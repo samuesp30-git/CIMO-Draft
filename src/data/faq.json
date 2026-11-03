@@ -29,6 +29,11 @@
     "respuesta": "Sí, la clínica atiende odontopediatría.",
     "pendiente": false
   },
+  {
+    "pregunta": "¿Quiénes son los especialistas?",
+    "respuesta": "Ocho. En odontología general, el Dr. Carlos Guzmán y la Dra. Marta Muñoz; en endodoncia, la Dra. Mayra Duarte y la Dra. Ana Lucía Palma; en ortodoncia y ortopedia maxilofacial, la Dra. María Delia Portillo; en cirugía maxilofacial y craneofacial, la Dra. Deisy Meza; en odontopediatría, la Dra. María Fernanda Ferrera; y en periodoncia, el Dr. Eric Pineda. Están todos, con su foto, en la página de Especialidades.",
+    "pendiente": false
+  },
 
   {
     "pregunta": "¿Cuánto cuesta un tratamiento?",
@@ -41,9 +46,9 @@
     "porQue": "No consta en ninguna fuente pública."
   },
   {
-    "pregunta": "¿Quiénes son los especialistas?",
+    "pregunta": "¿Puedo elegir con qué doctor me atienden?",
     "pendiente": true,
-    "porQue": "De todo el equipo solo consta públicamente la Dra. Marta Muñoz. La nómina está en una historia destacada de Instagram que exige sesión iniciada."
+    "porQue": "La clínica asigna el especialista según el caso, así que la respuesta corta es que no se elige. Falta que confirmen cómo quieren decirlo, y si hay alguna excepción."
   },
   {
     "pregunta": "¿Ofrecen servicios médicos además de los odontológicos?",

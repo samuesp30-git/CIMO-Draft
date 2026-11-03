@@ -15,6 +15,7 @@
     "tokens": "node research/tokens.js",
     "captura": "node scripts/captura.mjs",
     "fotos": "node scripts/fotos.mjs",
+    "retratos": "node scripts/retratos.mjs",
     "portadas": "node scripts/portadas.mjs",
     "tramas": "node scripts/tramas.mjs"
   },

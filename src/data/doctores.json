@@ -1,0 +1,74 @@
+[
+  {
+    "slug": "carlos-guzman",
+    "nombre": "Dr. Carlos Guzmán",
+    "especialidad": "Odontología general",
+    "especialidadSlug": "odontologia-general",
+    "linea": "Revisión, limpieza dental y caries: la puerta de entrada a cualquier otro tratamiento.",
+    "procedimientos": ["Revisión y diagnóstico", "Limpieza dental", "Resinas"],
+    "foto": "doctor-guzman"
+  },
+  {
+    "slug": "marta-munoz",
+    "nombre": "Dra. Marta Muñoz",
+    "especialidad": "Odontología general",
+    "especialidadSlug": "odontologia-general",
+    "linea": "Diagnóstico, prevención y rehabilitación estética para devolver forma y función a la sonrisa.",
+    "procedimientos": ["Diagnóstico", "Prevención", "Rehabilitación estética"],
+    "foto": "doctor-munoz"
+  },
+  {
+    "slug": "mayra-duarte",
+    "nombre": "Dra. Mayra Duarte",
+    "especialidad": "Endodoncia",
+    "especialidadSlug": "endodoncia",
+    "linea": "Trata el interior del diente —conductos y nervio— para salvar la pieza en vez de extraerla.",
+    "procedimientos": ["Tratamiento de conductos", "Retratamiento de conductos"],
+    "foto": "doctor-duarte"
+  },
+  {
+    "slug": "ana-lucia-palma",
+    "nombre": "Dra. Ana Lucía Palma",
+    "especialidad": "Endodoncia",
+    "especialidadSlug": "endodoncia",
+    "linea": "Trata el interior del diente —conductos y nervio— para salvar la pieza en vez de extraerla.",
+    "procedimientos": ["Tratamiento de conductos", "Retratamiento de conductos"],
+    "foto": "doctor-palma"
+  },
+  {
+    "slug": "maria-delia-portillo",
+    "nombre": "Dra. María Delia Portillo",
+    "especialidad": "Ortodoncia y ortopedia maxilofacial",
+    "especialidadSlug": "ortodoncia",
+    "linea": "Alinea mordida y dientes, con brackets o alineadores, y guía el crecimiento de los maxilares.",
+    "procedimientos": ["Brackets", "Alineadores Invisalign", "Ortopedia maxilar"],
+    "foto": "doctor-portillo"
+  },
+  {
+    "slug": "deisy-meza",
+    "nombre": "Dra. Deisy Meza",
+    "especialidad": "Cirujano Maxilofacial y Cráneo Facial",
+    "especialidadSlug": "cirugia-maxilofacial",
+    "linea": "Cirugía de boca, cara y cráneo: cordales, lesiones y malformaciones que piden quirófano.",
+    "procedimientos": ["Extracción de cordales", "Cirugía de lesiones", "Cirugía de malformaciones"],
+    "foto": "doctor-meza"
+  },
+  {
+    "slug": "maria-fernanda-ferrera",
+    "nombre": "Dra. María Fernanda Ferrera",
+    "especialidad": "Odontopediatría",
+    "especialidadSlug": "odontopediatria",
+    "linea": "Atención dental infantil, con el trato y el ritmo que un paciente pequeño necesita.",
+    "procedimientos": ["Primera visita del niño", "Limpieza y flúor", "Sellantes"],
+    "foto": "doctor-ferrera"
+  },
+  {
+    "slug": "eric-pineda",
+    "nombre": "Dr. Eric Pineda",
+    "especialidad": "Periodoncia",
+    "especialidadSlug": "periodoncia",
+    "linea": "Cuida la encía y el hueso que sostienen el diente: sangrado, sarro y enfermedad periodontal.",
+    "procedimientos": ["Raspado y alisado radicular", "Control de sarro", "Tratamiento de encías", "Mantenimiento periodontal"],
+    "foto": "doctor-pineda"
+  }
+]

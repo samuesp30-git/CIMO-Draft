@@ -23,6 +23,7 @@ const leer = (r) => JSON.parse(readFileSync(r, 'utf8'));
 
 const clinica = leer('src/data/clinica.json');
 const servicios = leer('src/data/servicios.json');
+const doctores = leer('src/data/doctores.json');
 const faq = leer('src/data/faq.json');
 const pendientes = leer('src/data/pendientes.json');
 const respuestas = leer('src/data/respuestas.json');
@@ -88,6 +89,22 @@ bloques.push(
   ...servicios.map((s) => `- ${s.nombre}: ${s.descripcion}`),
 );
 
+// EL EQUIPO. Hasta noviembre de 2026 esta seccion no existia y en su lugar
+// habia una prohibicion: no nombrar a ningun doctor, porque de toda la clinica
+// solo constaba publicamente la Dra. Marta Munoz. El cliente entrego la nomina
+// con foto, asi que el hueco pasa a ser un hecho. Lo que no cambia es que sigue
+// siendo un PERIMETRO CERRADO: estos ocho y ninguno mas.
+bloques.push(
+  ``,
+  `## Equipo (${doctores.length} especialistas, y no hay mas)`,
+  ...doctores.map((x) => `- ${x.nombre}: ${x.especialidad}. ${x.linea}`),
+  `- No hay mas doctores que estos ${doctores.length}. No inventes ninguno y no le cambies la especialidad a nadie.`,
+  // Esta linea no es un dato, es una regla de negocio, y es la que el cliente
+  // pidio por escrito: en la web no hay un solo boton para escribirle a un
+  // doctor concreto, asi que el asistente tampoco puede abrir esa puerta.
+  `- El paciente NO elige especialista: la clinica asigna segun el caso. Si alguien pide cita «con la doctora X», no se lo prometas; dile que la solicite por WhatsApp y que la clinica asigna al especialista que corresponda.`,
+);
+
 for (const t of clinica.tecnologia) {
   bloques.push(
     ``,
@@ -122,14 +139,13 @@ if (aprobadas.length) {
 // ── Lo que no se sabe. Esta seccion es la mas importante del archivo: define
 //    el perimetro de lo que el modelo NO puede contestar.
 const huecosFaq = faq.filter((f) => f.pendiente);
-const huecosPend = pendientes.filter((p) => ['precios', 'especialistas', 'brazo-medico', 'copan'].includes(p.id));
+const huecosPend = pendientes.filter((p) => ['precios', 'colegiacion', 'brazo-medico', 'copan'].includes(p.id));
 
 bloques.push(
   ``,
   `## Lo que NO se sabe — nunca lo inventes, siempre deriva a una persona`,
   ...huecosFaq.map((f) => `- ${f.pregunta} -> ${f.porQue}`),
   ...huecosPend.map((p) => `- ${p.titulo} -> ${p.detalle}`),
-  `- De todo el equipo solo consta publicamente el nombre de la Dra. Marta Munoz, y ni siquiera su especialidad o numero de colegiado estan confirmados. NO menciones ningun otro nombre de doctor, ni le atribuyas una especialidad a nadie.`,
 );
 
 const pendientesDelEquipo = respuestas.porPreguntar || [];

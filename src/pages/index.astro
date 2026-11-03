@@ -4,12 +4,20 @@ import Base from '../layouts/Base.astro';
 import Titular from '../components/Titular.astro';
 import Boton from '../components/Boton.astro';
 import Ubicacion from '../components/Ubicacion.astro';
-import IconoEsp from '../components/IconoEsp.astro';
 import clinica from '../data/clinica.json';
-import servicios from '../data/servicios.json';
+import doctores from '../data/doctores.json';
+import fotos from '../data/fotos.json';
 
 const escaner = clinica.tecnologia[0];
-const tresPrimeros = servicios.slice(0, 3);
+
+// LA GRUPAL DE AQUÍ ES LA OTRA. De la sesión salieron dos fotos de grupo casi
+// iguales; la de las sillas abre Especialidades y esta, la del suelo, se queda
+// en el inicio. Dos páginas que enseñan la misma foto parecen la misma página.
+//
+// El alt y la procedencia salen de fotos.json, igual que en PortadaFoto, y una
+// foto sin declarar revienta la compilación en vez de salir sin alt.
+const equipo = fotos.find((f) => f.id === 'equipo-inicio');
+if (!equipo) throw new Error('la foto "equipo-inicio" no está declarada en src/data/fotos.json');
 ---
 
 <Base
@@ -64,35 +72,40 @@ const tresPrimeros = servicios.slice(0, 3);
     </div>
   </section>
 
-  <section class="servicios">
-    <div class="contenedor">
-      <Titular nivel={2} previo="Servicios" resalte="mas buscado" class="revelable">Lo</Titular>
+  {/* AQUI HABIA TRES TARJETAS DE SERVICIO, y se fueron con ellos.
+      Esta franja tomaba los tres primeros de servicios.json y los componia
+      identicos —caja blanca, filete de 1 px, titulo y una linea—, lo cual ya
+      contradecia a la pagina siguiente. Desde que servicios.html dejo de ser un
+      catalogo de tratamientos para ser la nomina del equipo, aquellas tarjetas
+      se quedaban sin pagina a la que llevar: solo Invisalign conserva bloque
+      propio, y de Invisalign habla la banda oscura del final.
 
-      {/* Estas tres tarjetas contradecian a la pagina siguiente. Aqui los tres
-          servicios se componian identicos —caja blanca, filete de 1 px, titulo
-          y una linea— y en servicios.html «Ortodoncia invisible» es una tarjeta
-          oscura a todo lo ancho con boton propio. El visitante que venia del
-          inicio no tenia forma de saber cual de los tres era el motivo por el
-          que existe esta clinica, y al pinchar la tarjeta no pasaba nada
-          porque no era un enlace.
+      Lo que entra en su sitio es la gente, que es lo que esta clinica tiene y
+      ninguna plantilla puede copiar. Y asi las dos paginas vuelven a hablar del
+      mismo objeto, que era la gracia de las tarjetas con icono. */}
+  <section class="equipo">
+    <div class="contenedor rejilla-equipo">
+      <figure class="retrato revelable">
+        <img
+          src={`img/${equipo.id}.webp`}
+          srcset={`img/${equipo.id}-sm.webp 300w, img/${equipo.id}.webp 600w`}
+          sizes="(max-width: 60rem) 92vw, 420px"
+          alt={equipo.alt}
+          width="600"
+          height="750"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
 
-          El icono es el MISMO de servicios.html, y esa es la gracia: es lo que
-          hace que las dos paginas hablen del mismo objeto. A 32 px y no a 44
-          porque aqui acompana a un h3, no a un h2. */}
-      <div class="tarjetas">
-        {tresPrimeros.map((s) => (
-          <article class:list={['tarjeta', { clave: s.destacado }]}>
-            <h3>
-              {'iconoEsp' in s && <IconoEsp nombre={s.iconoEsp} tamano={32} alt="" />}
-              <span>{s.nombre}</span>
-            </h3>
-            <p>{s.resumen}</p>
-            {s.destacado && s.pagina && <a class="ir" href={s.pagina}>Ver la página de Invisalign →</a>}
-          </article>
-        ))}
+      <div class="texto">
+        <Titular nivel={2} previo="Equipo" resalte="te atiende" class="revelable">La gente que</Titular>
+        <p class="entradilla">
+          Ocho especialistas en una sola clínica: odontología general, endodoncia,
+          ortodoncia, cirugía maxilofacial, odontopediatría y periodoncia.
+        </p>
+        <p class="mas"><a href="servicios.html">Ver a los ocho especialistas</a></p>
       </div>
-
-      <p class="mas"><a href="servicios.html">Ver los cinco servicios</a></p>
     </div>
   </section>
 
@@ -211,34 +224,28 @@ const tresPrimeros = servicios.slice(0, 3);
   /* Luz que entra por arriba a la derecha, no un relleno plano. Las tres
      paradas —marca-suave, marca-tenue y blanco— son fondos claros ya
      verificados: ningún texto del sistema falla contra ninguno de los tres. */
-  .servicios {
+  .equipo {
     background-color: var(--surface-alterna);
     background-image: var(--degradado-claro);
     border-block: 1px solid var(--line);
   }
-  .servicios .contenedor { padding-block: var(--s-5); display: grid; gap: var(--s-3) }
-  .tarjetas { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2) }
-  .tarjeta {
-    background: var(--surface-card);
-    border: 1px solid var(--border-card);
-    border-radius: var(--radius);
-    padding: var(--s-3);
-    display: grid;
-    gap: var(--s-1);
-    align-content: start;
-  }
-  /* `align-items: center` y no `baseline`, igual que en servicios.html: una
-     imagen no tiene linea base tipografica y con baseline se descuelga. */
-  .tarjeta h3 { font-size: var(--step-2); display: flex; align-items: center; gap: 0.4em }
-  .tarjeta p { font-size: var(--step--1); color: var(--ink-soft) }
 
-  /* El destacado se marca con el BORDE, no con una superficie. Esta banda ya
-     lleva degradado claro, y una tarjeta en --marca-suave encima se perderia
-     justo en la esquina donde el degradado arranca en ese mismo color. El
-     borde en --marca-text no depende del fondo. Y el color solo no basta: lo
-     que de verdad distingue a esta tarjeta es que lleva a algun sitio. */
-  .tarjeta.clave { border-color: var(--marca-text) }
-  .ir { font-family: var(--font-datos); font-size: var(--step--1); justify-self: start; margin-top: var(--s-1) }
+  /* LA FOTO NO VA A MEDIA PAGINA. En dos columnas iguales la grupal sale a 545
+     px de ancho y, siendo 4:5, a 681 de alto: una foto del tamano de la
+     pantalla al lado de tres lineas de texto. A 420 la foto sigue mandando —es
+     lo primero que se mira— y el texto deja de flotar en un campo vacio. */
+  .rejilla-equipo {
+    padding-block: var(--s-5);
+    display: grid;
+    grid-template-columns: minmax(0, 420px) 1fr;
+    gap: var(--s-5);
+    align-items: center;
+  }
+  /* Sin borde: una fotografia ya trae su propio limite. El filete de 1 px solo
+     hace falta cuando lo de dentro es del mismo color que lo de fuera, que es
+     el caso de una tarjeta blanca sobre papel blanco, no el de esta. */
+  .retrato { margin: 0; border-radius: var(--radius); overflow: hidden; line-height: 0 }
+  .retrato img { width: 100%; height: auto; display: block }
   .mas { font-family: var(--font-datos); font-size: var(--step--1) }
 
   /* Se come el margen superior del pie. Sin esto quedaba una franja blanca de
@@ -279,7 +286,7 @@ const tresPrimeros = servicios.slice(0, 3);
   .franja-lado p { color: var(--sobre-oscuro); font-size: var(--step-0) }
 
   @media (max-width: 60rem) {
-    .rejilla, .rejilla-franja { grid-template-columns: 1fr }
-    .tarjetas { grid-template-columns: 1fr }
+    .rejilla, .rejilla-franja, .rejilla-equipo { grid-template-columns: 1fr }
   }
+
 </style>

@@ -530,21 +530,48 @@ importa porque de ella depende qué se puede montar hoy y qué hay que esperar:
 
 | tipo de imagen | ¿afirma algo? | ¿se usa? |
 |---|---|---|
-| consultorio, sala de espera, equipo | «así es nuestra clínica» | **no**, hasta que el cliente mande la suya |
-| doctores, personal | «estas son las personas que te atienden» | **no** |
+| consultorio, sala de espera, equipo | «así es nuestra clínica» | **sí** desde que el cliente mandó la suya (nov. 2026); de banco, nunca |
+| doctores, personal | «estas son las personas que te atienden» | **sí**, las que entregó la clínica; de banco, nunca |
 | antes/después, pacientes | «estos son nuestros resultados» | **no**, y además necesita consentimiento |
 | primer plano de una sonrisa | habla del tratamiento, no de la sede | **sí** |
 | textura, luz, abstracto | nada | **sí** |
 
 Un primer plano anónimo de una sonrisa no le promete a nadie cómo es el local.
 Una foto de un quirófano ajeno sí, y eso es lo que estaba prohibido desde el
-principio. **La fotografía real sigue pendiente**: `pendientes.json` conserva el
-hueco y `verificar` falla si alguien lo borra creyendo que una imagen de banco lo
-cierra.
+principio — y lo sigue estando.
+
+Lo que cambió en noviembre de 2026 no es la regla, es el material: la clínica
+entregó su propia sesión —ocho retratos en sus consultorios y dos grupales— y de
+ahí salieron la página de Especialidades y la franja del equipo del inicio. Esas
+fotos no prometen nada que el paciente no vaya a encontrar, porque son
+exactamente lo que va a encontrar. Las dos primeras filas pasan a «sí» por eso y
+solo por eso: una foto de banco de personal sigue sin poder entrar, y el día que
+alguien lo intente la fila dirá lo mismo que decía.
+
+**La fotografía de la portada sigue pendiente**: la que hay es generada con IA y
+declarada como tal. `pendientes.json` conserva el hueco y `verificar` falla si
+alguien lo borra creyendo que una imagen de banco lo cierra.
 
 Toda imagen que no sea el logo vive declarada en `src/data/fotos.json` con su
 licencia y su enlace de origen. La comprobación 22 de `verificar` falla ante
-cualquier `img/` que aparezca en `dist` sin declarar — probada con cebo.
+cualquier `img/` que aparezca en `dist` sin declarar — probada con cebo. Una
+foto del cliente no tiene enlace que comprobar, así que se le exige lo mismo que
+a una de IA: que la nota lo diga. `fuente: "Cliente"` obliga a que la nota
+contenga «ENTREGADA», y si no, `verificar` falla.
+
+Los retratos no pasan por `scripts/fotos.mjs` —que recorta portadas por gravedad
+y les apaga el color— sino por `scripts/retratos.mjs`, que extrae una ventana
+escrita a mano en `fotos.json` y no toca el color: el color de una cara es el
+motivo, y apagarlo al 55 % deja a una persona con aspecto de cadáver.
+
+Esa ventana es **2:3, el encuadre entero**. Los retratos nacieron recortados a
+4:5 de busto para una rejilla de cuatro columnas, y a 250 px de ancho ocho
+bustos se leían como lo que el cliente llamó «pequeñas facetas». La página pasó
+a una fila por doctor y la ventana pasó a ser la proporción nativa de los
+archivos entregados (853×1280), así que para siete de los ocho el recorte no
+recorta: es la foto completa. El del Dr. Pineda es 3:4 y pierde 53 px por lado
+para entrar en la misma proporción. La comprobación de proporción del script lo
+confirma en vez de darlo por supuesto.
 
 ### Contraste sobre una fotografía
 
@@ -731,8 +758,8 @@ Seis pantallas del prototipo → **cinco páginas**, porque con una sola sede un
 página «Ubicaciones» aparte se queda en nada:
 
 ```
-index.html       portada, cinco servicios, franja de Invisalign
-servicios.html   los cinco con anclas #slug
+index.html       portada, escáner, equipo, ubicación, franja de Invisalign
+servicios.html   «Especialidades»: Invisalign + los ocho doctores, anclas #slug
 invisalign.html  página propia — 4 de 12 posts recientes lo promocionan
 preguntas.html   6 respondidas + 5 listadas sin responder
 contacto.html    dirección, horario, vías de contacto, diálogo de cita
@@ -746,8 +773,8 @@ añadir un elemento y no migrar un esquema.
 
 **El estado de React se eliminó, no se emuló:** las vistas son páginas, el
 acordeón es `<details name="faq">`, los chips de filtro pasaron a ser anclas
-(con cinco servicios visibles a la vez, un filtro es un control que parece hacer
-algo y no hace nada), y la fecha de la cita vive en el script del diálogo.
+(con seis especialidades visibles a la vez, un filtro es un control que parece
+hacer algo y no hace nada), y la fecha de la cita vive en el script del diálogo.
 
 **El diálogo pide día, no hora**, y dice «solicitar», nunca «reservar». El sitio
 no conoce la agenda de la clínica; un calendario que deja elegir las 3:15 promete
@@ -763,8 +790,13 @@ algo que nadie puede cumplir.
       en vez de por coordenadas, y con el aviso de mudanza al lado. Ver §6.
 - [ ] **Logo vectorial.** Solo hay 150 × 150 px. El wordmark se compone en tipo;
       el símbolo circular no.
-- [ ] **Fotografía propia** de la clínica y del equipo.
-- [ ] **Nómina de especialistas** — solo consta la Dra. Marta Muñoz.
+- [x] **Nómina del equipo y su fotografía** — llegó en noviembre de 2026: ocho
+      especialistas con nombre, especialidad y retrato propio, más dos grupales.
+      De ahí salen `servicios.html` (Especialidades) y la franja del inicio.
+- [ ] **Fotografía propia de la sede** — portada, sala de espera, recepción. La
+      portada sigue llevando una imagen generada con IA, declarada como tal.
+- [ ] **Números de colegiación** de los ocho. Es lo único que falta de cada
+      ficha, y lo que pediría un directorio médico.
 - [ ] **Consentimiento por escrito** para los casos antes/después.
 - [ ] **¿Existe el brazo médico?** El nombre lo dice, el contenido público no.
 - [ ] **Precios o financiamiento, y seguros aceptados.**
